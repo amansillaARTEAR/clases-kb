@@ -1478,6 +1478,16 @@ function editar(id) {
     m.remove(); guardarEj(ne);
   };
 }
+function editarPlan(p) { S.edPlan = { prev: S.draft }; S.draft = JSON.parse(JSON.stringify({ ...p, _id: null, _saved: false, _plan: p._id })); delete S.draft._id; S.draft.bloques.forEach(bl => bl.min = Math.round(durBloque(bl) / 60)); S.draft.dur = durTotal(S.draft.bloques); S.tab = 'clase'; render(); window.scrollTo(0, 0); }
+function verPlan(id) { const p = (S.plan || []).find(x => x._id === id); if (!p) return; const f = new Date(p.fecha);
+  const bl0 = JSON.parse(JSON.stringify(p.bloques)); bl0.forEach(bl => bl.min = Math.round(durBloque(bl) / 60));
+  const m = modal(`<h3 style="margin-top:0">Clase planificada<br><span class="mut" style="font-size:14px;text-transform:capitalize">${f.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'numeric' })} · ${f.toTimeString().slice(0, 5)}</span></h3>${bl0.map(bl => `<div class="blk"><div class="blkh"><h3>${titulo(bl)}</h3><small>${bl.min} min</small></div><div class="cfg">${cfgTxt(bl)}</div>${bl.items.map(it => { const e = exById(it.id) || { n: it.n || it.id, a: 'shadow', m: [] }; return exRow(e, '', `<span class="chip">${dosis(bl, it)}</span>`); }).join('')}</div>`).join('')}
+   <div class="row" style="justify-content:flex-end"><button class="btn" id="vp-x">Cerrar</button><button class="btn" id="vp-live">▶ Modo clase</button><button class="btn pri" id="vp-ed">✏️ Editar</button></div>`);
+  hookAnims(m);
+  m.querySelector('#vp-x').onclick = () => m.remove();
+  m.querySelector('#vp-ed').onclick = () => { m.remove(); editarPlan(p); };
+  m.querySelector('#vp-live').onclick = () => { m.remove(); editarPlan(p); setTimeout(() => document.getElementById('b-live')?.click(), 50); };
+}
 function verClase(i) {
   const c = S.clases[i];
   const m = modal(`<h3 style="margin-top:0">Clase del ${new Date(c.fecha).toLocaleDateString('es-AR')}</h3>${c.bloques.map(bl => `<div class="blk"><div class="blkh"><h3>${titulo(bl)}</h3><small>${bl.min} min</small></div><div class="cfg">${cfgTxt(bl)}</div>${bl.items.map(it => { const e = exById(it.id) || { n: it.n, a: 'shadow', m: [] }; return exRow(e, '', `<span class="chip">${dosis(bl, it)}</span>`); }).join('')}</div>`).join('')}
@@ -1580,7 +1590,7 @@ $('#main').addEventListener('click', e => {
   if (b.id === 'b-alt') { S.alTodos = !S.alTodos; render(); return; }
   if (b.dataset.sug) { S.carga = b.dataset.sug; if (S.draft) { S.draft.carga = S.carga; saveDraftLocal(); } toast('✓ Carga ' + CARGAS[S.carga].toLowerCase() + ' aplicada'); render(); return; }
   if (b.id === 'b-plan') { b.disabled = true; b.textContent = 'Planificando…'; planificarMes(); return; }
-  if (b.dataset.plo) { const p = S.plan.find(x => x._id === b.dataset.plo); if (p) { S.edPlan = { prev: S.draft }; S.draft = JSON.parse(JSON.stringify({ ...p, _id: null, _saved: false, _plan: p._id })); delete S.draft._id; S.draft.bloques.forEach(bl => bl.min = Math.round(durBloque(bl) / 60)); S.draft.dur = durTotal(S.draft.bloques); render(); window.scrollTo(0, 0); } return; }
+  if (b.dataset.plo) { verPlan(b.dataset.plo); return; }
   if (b.id === 'b-edback') { cerrarPlan(); return; }
   if (b.dataset.pld) { if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = '¿Borrar?'; return; } S.db && serial(() => S.db.doc('plan/' + b.dataset.pld).delete()); return; }
   if (b.dataset.sens) { const [i, k] = b.dataset.sens.split(','), c = S.clases[+i]; if (!c) return; c.sens = c.sens === k ? null : k; render(); if (c._id && S.db) serial(() => clasesRef().doc(c._id).update({ sens: c.sens })); return; }
