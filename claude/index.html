@@ -841,9 +841,29 @@ function generar(fechaF, silencioso) {
   else { mov(); warm(); grupos(4); tabata(); estir(); equip(); gua(Math.max(2, P.gua - 1)); bol(Math.max(1, P.bol - 1)); }
   if (false) { const it = pick(3, 'pel', ['situacional', 'defensa', 'ritmo', 'clinch', 'reaccion', 'sparring'].sort(() => Math.random() - .5)); if (it.length) { const ib = B.findIndex(b => b.f === 'elem'); B.splice(ib < 0 ? B.length : ib, 0, { b: 'pel', t: '🏆 Competidores', k: 'rounds', f: null, cfg: rc, items: it }); } }
   for (let i = B.length - 1; i >= 0; i--) if (B[i].k !== 'pausa' && !B[i].items.length) B.splice(i, 1);
-  B.forEach(bl => { bl.items.forEach(it => it.rounds = 1); bl.min = Math.round(durBloque(bl) / 60); });
+  B.forEach(bl => { bl.items.forEach(it => it.rounds = 1); });
+  ajustarDuracion(B);
+  B.forEach(bl => { bl.min = Math.round(durBloque(bl) / 60); });
   S.draft = { sede: sedeAct().id, hor: horAct().id, fecha: fechaF || fechaClase(), semana: sem, carga: S.carga || 'normal', formato: fmtK, esq: e0, dur: durTotal(B), bloques: B };
   if (!silencioso) { saveDraftLocal(); render(); }
+}
+// duración de la clase según el horario (por defecto 90 min)
+function minutosClase() { const h = horAct(), f = finDe(h); if (!h.hora || !f) return 90; const [a, b] = h.hora.split(':').map(Number), [c, d] = f.split(':').map(Number); let m = c * 60 + d - (a * 60 + b); if (m <= 0) m += 1440; return m > 20 && m < 300 ? m : 90; }
+const segTotal = B => B.reduce((a, b) => a + durBloque(b), 0) + B.filter((b, i) => i > 0).reduce((a, b) => a + paDe(b), 0);
+// agrega o saca rounds y vueltas hasta acercarse a la duración de la clase (sin pasarse)
+function ajustarDuracion(B) { const T = minutosClase() * 60;
+  const rb = f => B.find(b => b.k === 'rounds' && b.f === f && b.items.length);
+  for (let g = 0; g < 40 && segTotal(B) > T; g++) { // sacar
+    const cands = [rb('guanteo'), rb('elem'), rb('tecsin')].filter(Boolean); let hecho = false;
+    for (const bl of cands) { const it = [...bl.items].reverse().find(i => (i.rounds || 1) > 1); if (it) { it.rounds--; hecho = true; break; } }
+    if (!hecho) for (const bl of cands) if (bl.items.length > (bl.f === 'tecsin' ? 2 : 1)) { bl.items.pop(); hecho = true; break; }
+    if (!hecho) { const c = B.filter(b => b.k === 'circ' && (b.cfg.vueltas || 1) > 2).pop(); if (c) { c.cfg = { ...c.cfg, vueltas: c.cfg.vueltas - 1 }; hecho = true; } }
+    if (!hecho) { const i = B.findIndex(b => /Tabata/.test(b.t)); if (i >= 0) { B.splice(i, 1); hecho = true; } }
+    if (!hecho) break; }
+  for (let g = 0, k = 0; g < 40; g++, k++) { // agregar rounds de guanteo y bolsa alternados
+    const bl = [rb('guanteo'), rb('elem')].filter(Boolean)[k % 2] || rb('guanteo') || rb('elem'); if (!bl) break;
+    const it = bl.items.reduce((m, i) => (i.rounds || 1) < (m.rounds || 1) ? i : m, bl.items[0]); it.rounds = (it.rounds || 1) + 1;
+    if (segTotal(B) > T) { it.rounds--; const otro = [rb('guanteo'), rb('elem')].filter(Boolean)[(k + 1) % 2]; if (!otro || otro === bl) break; const i2 = otro.items[0]; i2.rounds = (i2.rounds || 1) + 1; if (segTotal(B) > T) { i2.rounds--; break; } } }
 }
 function recalcular() { S.draft.bloques.forEach(bl => bl.min = Math.round(durBloque(bl) / 60)); S.draft.dur = durTotal(S.draft.bloques); saveDraftLocal(); render(); }
 function cambiar(bi, ii) {
