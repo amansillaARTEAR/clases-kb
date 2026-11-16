@@ -1067,7 +1067,7 @@ function vClase() {
     ${(() => { const hoy = new Date(); hoy.setHours(0, 0, 0, 0); const L = (S.alumnos || []).map(a => { const n = (S.alDatos || {})[a]?.nac; if (!n) return null; const c = new Date(hoy.getFullYear(), +n.slice(5, 7) - 1, +n.slice(8)); if (c < hoy) c.setFullYear(c.getFullYear() + 1); const dd = Math.round((c - hoy) / 864e5); return dd <= 7 ? `${esc(a)} ${dd === 0 ? '<b>hoy</b>' : dd === 1 ? 'mañana' : 'el ' + c.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric' })}` : null; }).filter(Boolean); return L.length ? `<div class="note" style="margin-top:6px">🎂 Cumple ${L.join(' · ')}</div>` : ''; })()}
     ${molestias().length ? `<div class="warn" style="margin:6px 0 0">⚠ Molestias: ${molestias().map(x => `${esc(x.a)} (${x.z.map(z => ZONAS[z]).join(', ')})`).join(' · ')}</div>` : ''}
     <div class="row" style="margin-top:8px"><button class="btn sm" id="b-plan">📅 Planificar el resto del mes</button></div></div>
-    ${(S.plan || []).filter(enGrupo).length ? `<div class="card"><b>📅 Próximas clases planificadas</b>${S.plan.filter(enGrupo).map(p => `<div class="row" style="justify-content:space-between;align-items:center;padding:6px 0;border-top:1px solid var(--line)"><span>${new Date(p.fecha).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'numeric' })} <span class="mut" style="font-size:12px">· ${FORMATOS[p.formato] || ''}</span></span><span class="row" style="gap:6px"><button class="btn sm" data-plo="${p._id}">Abrir</button><button class="btn sm" data-pld="${p._id}" title="Borrar">✕</button></span></div>`).join('')}</div>` : ''}`;
+    ${(S.plan || []).filter(enGrupo).length ? `<div class="card"><b>📅 Próximas clases planificadas</b>${S.plan.filter(enGrupo).map(p => `<div class="row" style="justify-content:space-between;align-items:center;padding:6px 0;border-top:1px solid var(--line)"><span>${new Date(p.fecha).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'numeric' })} <span class="mut" style="font-size:12px">· ${FORMATOS[p.formato] || ''}</span></span><span class="row" style="gap:6px">${S.draft?._plan === p._id ? '<span class="mut" style="font-size:12px">✓ Abierta abajo</span>' : `<button class="btn sm" data-plo="${p._id}">Abrir</button>`}<button class="btn sm" data-pld="${p._id}" title="Borrar">✕</button></span></div>`).join('')}</div>` : ''}`;
   if (!S.loaded.banco) return h + `<div class="note">Cargando ejercicios…</div>`;
   if (!S.banco?.length) return h + `<div class="warn">El banco de ejercicios está vacío. Cargá ejercicios en la pestaña Ejercicios.</div>`;
   if (!S.draft) S.draft = claseVacia();
@@ -1397,8 +1397,9 @@ async function guardarPlan(fecha) {
   const id = d._plan || ('p' + String(d.fecha).slice(0, 10).replace(/-/g, '') + '_' + d.sede + '_' + d.hor + '_' + Date.now().toString(36));
   const { _saved, _id, _plan, tiempos, ...rest } = d;
   await serial(() => S.db.doc('plan/' + id).set(JSON.parse(JSON.stringify(rest))));
-  d._plan = id; saveDraftLocal(); render();
-  toast('Guardada para el ' + new Date(d.fecha).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'numeric' }) + '. No cuenta como dada.');
+  const fx = new Date(d.fecha).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'numeric' });
+  S.draft = null; saveDraftLocal(); render(); window.scrollTo(0, 0);
+  toast('Guardada para el ' + fx + '. La abrís desde Próximas clases planificadas.');
 }
 async function guardarClase() {
   if (!S.db) { toast('Sin conexión a la base.'); return; }
@@ -1546,7 +1547,7 @@ $('#main').addEventListener('click', e => {
   if (b.id === 'b-alt') { S.alTodos = !S.alTodos; render(); return; }
   if (b.dataset.sug) { S.carga = b.dataset.sug; if (S.draft) { S.draft.carga = S.carga; saveDraftLocal(); } toast('✓ Carga ' + CARGAS[S.carga].toLowerCase() + ' aplicada'); render(); return; }
   if (b.id === 'b-plan') { b.disabled = true; b.textContent = 'Planificando…'; planificarMes(); return; }
-  if (b.dataset.plo) { const p = S.plan.find(x => x._id === b.dataset.plo); if (p) { S.draft = JSON.parse(JSON.stringify({ ...p, _id: null, _saved: false, _plan: p._id })); delete S.draft._id; saveDraftLocal(); render(); window.scrollTo(0, 0); } return; }
+  if (b.dataset.plo) { const p = S.plan.find(x => x._id === b.dataset.plo); if (p) { S.draft = JSON.parse(JSON.stringify({ ...p, _id: null, _saved: false, _plan: p._id })); delete S.draft._id; saveDraftLocal(); render(); setTimeout(() => document.getElementById('b-live')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50); toast('Abierta: ' + new Date(p.fecha).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'numeric' }) + '. Podés editarla o tocar Modo clase.'); } return; }
   if (b.dataset.pld) { if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = '¿Borrar?'; return; } S.db && serial(() => S.db.doc('plan/' + b.dataset.pld).delete()); return; }
   if (b.dataset.sens) { const [i, k] = b.dataset.sens.split(','), c = S.clases[+i]; if (!c) return; c.sens = c.sens === k ? null : k; render(); if (c._id && S.db) serial(() => clasesRef().doc(c._id).update({ sens: c.sens })); return; }
   if (b.id === 'b-res') { verResumen(); return; }
