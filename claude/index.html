@@ -771,7 +771,7 @@ function bloquesBase() { const P = params(semanaAct()), rc = { w: P.rw, r: P.rr 
   return [{ b: 'cal', t: 'Movimiento articular', k: 'cont', cfg: { each: 20 }, items: [] }, { b: 'cal', t: 'Entrada en calor', k: 'cont', cfg: { each: 45 }, items: [] },
     { b: 'fis', t: 'Circuito', k: 'circ', cfg: { w: 20, r: 5, vueltas: 3 }, items: [] }, { b: 'calma', t: 'Estiramiento', k: 'cont', cfg: { each: 30 }, items: [] },
     { b: 'pausa', t: 'Equiparse', k: 'pausa', cfg: { each: 300 }, items: [] }, { b: 'tec', t: 'Técnica', k: 'rounds', f: 'tecsin', cfg: { ...rc }, items: [] },
-    { b: 'tec', t: 'Guanteos', k: 'rounds', f: 'guanteo', cfg: { ...rc }, items: [] }, { b: 'tec', t: 'Bolsa / foco / paos', k: 'rounds', f: 'elem', cfg: { ...rc }, items: [] }]; }
+    { b: 'tec', t: 'Guanteos', k: 'rounds', f: 'guanteo', cfg: { ...rc }, items: [] }, { b: 'tec', t: 'Bolsa / foco / paos', k: 'rounds', f: 'elem', cfg: { ...rc }, items: [] }, { b: 'calma', t: 'Estiramiento final', k: 'cont', f: 'final', cfg: { each: 30 }, items: [] }]; }
 const mmssC = t => { t = Math.round(t); return Math.floor(t / 60) + "'" + String(t % 60).padStart(2, '0') + '"'; };
 function tiemposHtml(T) { if (!T || !Object.keys(T).length) return ''; const L = Object.entries(T).map(([a, v]) => [a, v.filter(x => x != null)]).filter(x => x[1].length).sort((x, y) => Math.min(...x[1]) - Math.min(...y[1]));
   return `<div class="note" style="text-align:center">⏱ ${L.map(([a, v], i) => `${i === 0 ? '🥇 ' : ''}<b>${esc(a)}</b> ${v.map(mmssC).join(' / ')}`).join(' · ')}</div>`; }
@@ -828,6 +828,7 @@ function generar(fechaF, silencioso) {
     B.push({ b: 'fis', t: 'Circuito · Isométricos', k: 'circ', cfg: { w, r: 20, vueltas: 2 }, items: it }); };
   const finisher = () => B.push({ b: 'fis', t: 'Circuito · Final intenso', k: 'circ', cfg: { w: 20, r: 10, vueltas: sem === 4 ? 2 : 3 }, items: conU(() => [...pick(2, 'fis', ['cardio', 'pot']), ...pick(1, 'core')]) });
   const estir = () => { excl.add('estir_general'); B.push({ b: 'calma', t: 'Estiramiento', k: 'cont', cfg: { each: 30 }, items: [...pick(3, 'calma', ['calma']).sort((x, y) => -ordCuerpo(exById(x.id) || x, exById(y.id) || y)), ...pick(1, 'calma', ['abertura'])] }); };
+  const estirFin = () => B.push({ b: 'calma', t: 'Estiramiento final', k: 'cont', f: 'final', cfg: { each: 30 }, items: pick(4, 'calma', ['calma']).sort((x, y) => -ordCuerpo(exById(x.id) || x, exById(y.id) || y)) });
   const prep = () => B.push({ b: 'pausa', t: 'Preparación', k: 'pausa', f: 'prep', cfg: { each: 30 }, items: [] });
   const equip = () => B.push({ b: 'pausa', t: 'Equiparse', k: 'pausa', cfg: { each: 300 }, items: [] });
   const tec = n => n > 0 && B.push({ b: 'tec', t: 'Técnica', k: 'rounds', f: 'tecsin', cfg: rc, items: pick(n, 'tec', null, 'tecsin') });
@@ -835,10 +836,10 @@ function generar(fechaF, silencioso) {
   const bol = n => n > 0 && B.push({ b: 'tec', t: 'Bolsa / foco / paos', k: 'rounds', f: 'elem', cfg: rc, items: pick(n, 'tec', null, 'elem') });
   const combo = () => { const it = conU(() => [...pick(1, 'fis', null, 'sup'), ...pick(1, 'fis', null, 'cardsin'), ...pick(1, 'fis', null, 'inf'), ...pick(1, 'fis', null, 'cardsin'), ...pick(1, 'core'), ...pick(1, 'fis', null, 'cardsin')]);
     B.push({ b: 'fis', t: 'Circuito combinado', k: 'circ', cfg: { w: 40, r: 15, vueltas: sem === 4 ? 2 : 3 }, items: it }); };
-  if (fmtK === 'trad') { mov(); warm(); grupos(4); if (Math.random() < .5) tabata(); estir(); equip(); tec(2); gua(P.gua); bol(P.bol); }
-  else if (fmtK === 'combo') { mov(); warm(); combo(); estir(); equip(); tec(2); gua(P.gua); bol(P.bol); }
-  else if (fmtK === 'iso') { mov(); warm(); isos(); tabata(); estir(); equip(); tec(2); gua(P.gua); bol(P.bol); }
-  else { mov(); warm(); grupos(4); tabata(); estir(); equip(); gua(Math.max(2, P.gua - 1)); bol(Math.max(1, P.bol - 1)); }
+  if (fmtK === 'trad') { mov(); warm(); grupos(4); if (Math.random() < .5) tabata(); estir(); equip(); tec(2); gua(P.gua); bol(P.bol); estirFin(); }
+  else if (fmtK === 'combo') { mov(); warm(); combo(); estir(); equip(); tec(2); gua(P.gua); bol(P.bol); estirFin(); }
+  else if (fmtK === 'iso') { mov(); warm(); isos(); tabata(); estir(); equip(); tec(2); gua(P.gua); bol(P.bol); estirFin(); }
+  else { mov(); warm(); grupos(4); tabata(); estir(); equip(); gua(Math.max(2, P.gua - 1)); bol(Math.max(1, P.bol - 1)); estirFin(); }
   if (false) { const it = pick(3, 'pel', ['situacional', 'defensa', 'ritmo', 'clinch', 'reaccion', 'sparring'].sort(() => Math.random() - .5)); if (it.length) { const ib = B.findIndex(b => b.f === 'elem'); B.splice(ib < 0 ? B.length : ib, 0, { b: 'pel', t: '🏆 Competidores', k: 'rounds', f: null, cfg: rc, items: it }); } }
   for (let i = B.length - 1; i >= 0; i--) if (B[i].k !== 'pausa' && !B[i].items.length) B.splice(i, 1);
   B.forEach(bl => { bl.items.forEach(it => it.rounds = 1); });
