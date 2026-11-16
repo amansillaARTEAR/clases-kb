@@ -880,8 +880,8 @@ function generar(fechaF, silencioso) {
 // duración de la clase según el horario (por defecto 90 min)
 function minutosClase() { const h = horAct(), f = finDe(h); if (!h.hora || !f) return 90; const [a, b] = h.hora.split(':').map(Number), [c, d] = f.split(':').map(Number); let m = c * 60 + d - (a * 60 + b); if (m <= 0) m += 1440; return m > 20 && m < 300 ? m : 90; }
 const segTotal = B => B.reduce((a, b) => a + durBloque(b), 0) + B.filter((b, i) => i > 0).reduce((a, b) => a + paDe(b), 0);
-// agrega o saca rounds y vueltas hasta acercarse a la duración de la clase (sin pasarse)
-function ajustarDuracion(B) { const T = minutosClase() * 60;
+// agrega o saca rounds y vueltas hasta acercarse a la duración de la clase (puede pasarse un poco)
+function ajustarDuracion(B) { const T = (minutosClase() + 5) * 60; // se permite pasarse hasta 5 min
   const rb = f => B.find(b => b.k === 'rounds' && b.f === f && b.items.length);
   for (let g = 0; g < 40 && segTotal(B) > T; g++) { // sacar
     const cands = [rb('guanteo'), rb('elem'), rb('tecsin')].filter(Boolean); let hecho = false;
