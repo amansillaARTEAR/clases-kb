@@ -520,6 +520,7 @@ const ANIM = {
  kickcross:A('GU KIK GU CRO GU',.38), c1232:A('GU JAB CRO HOK CRO GU',.28), c112:A('GU JAB GU JAB CRO GU',.26), straights:A('JAB CRO',.18), jabbody:A('GU BJ GU JAB GU',.32), lungehold:A('LUB LUB',1.5),
  dragon:A('DFU DFD',1), bridge:A('BRGD BRGU',.8), snatch:A('DLB DLT OVH DLT',.4), slam:A('OVH SQH',.45), pistol:A('PST PSB',.9), pike:A('PKU PKD',.7), sideplank:A('SPL SPL2',1.1),
  bandrow:A('BR1 BR2',.65,['b_a:95:46']), bandpull:A('PA1 PA2',.6,['b_hands']), bandface:A('FP1 FP2',.6,['b_a:95:20']), bandpush:A('PUU PUD',.6,['b_back']), bandpress:A('BP1 BP2',.6,['b_feet']), bandsquat:A('BP1 BS2',.7,['b_feet']), banddl:A('DLB DLT',.7,['b_feet']), bandwalk:A('LW1 LW2 LW3 LW2',.4,['b_knees']), bandpallof:A('PP1 PP2',.8,['b_a:3:40']), bandchop:A('WB1 WB2',.6,['b_a:3:6']), bandshadow:A('GU JAB GU CRO GU',.3,['b_a:3:40']),
+ escpunch:A('QF1 QF2 QF1 QF2 GU JAB GU CRO GU',.2,['escalera']),
  stretch:A('ST STR STR',1.2), quad:A('QST QST2',1.5), armstretch:A('ARMS ARMS2',1.5), breathe:A('ST ARMB',1.6),
 };
 const ANIM_NAMES = Object.keys(ANIM);
@@ -1312,6 +1313,8 @@ const EX_CODE = [
   { id: 'soga_basico', ovv: 100, n: 'Soga', d: 'Trabajo libre de soga variando: salto básico, boxer step, trote, rodillas arriba, saltos laterales, a un pie, cruces y dobles.' },
   { id: 'esc_dentro', ovv: 100, a: 'escinout', n: 'Escalera', d: 'Trabajo libre de escalera variando: 2 adentro 2 afuera, rayuela, laterales, alternando los pies, de costado 2 pies adentro y 2 afuera.' },
   { id: 'soga_esquivas', ovv: 100, b: 'cal', p: 'movil', n: 'Cintura con soga elástica', d: 'Soga elástica tensada a la altura de la cabeza: avanzar y retroceder en guardia pasando por debajo con rolling de lado a lado.' },
+  { id: 'esc_idavuelta', ovv: 100, b: 'fis', p: 'cardio', a: 'escfeet', nv: 1, on: true, m: ['escalera'], n: 'Escalera ida y vuelta', d: 'Pasar la escalera rápido de ida y volver de costado, sin pausa.' },
+  { id: 'esc_golpes', ovv: 100, b: 'tec', p: 'combo', a: 'escpunch', nv: 1, on: true, m: ['escalera'], n: 'Escalera en guardia con golpes', d: 'Pasar la escalera en guardia y al salir tirar una combinación (1-2, 1-2-patada, etc.).' },
   { id: 'art_cintura', ovv: 100, a: 'hipcirc', n: 'Círculos de cadera', d: 'Manos en la cintura: círculos amplios de cadera hacia un lado y después hacia el otro.' },
   { id: 'art_cadera', ovv: 100, a: 'legcirc', n: 'Círculos de pierna', d: 'Parado en una pierna, levantar la otra estirada y hacer círculos con toda la pierna (flexores de cadera); después cambiar de pierna.' },
   { id: 'remo_banda', ovv: 100, b: 'fis', p: 'trac', a: 'bandrow', nv: 1, on: true, m: ['bandas'], n: 'Remo con banda elástica', d: 'Banda atada adelante a la altura del pecho: tirar hacia la cintura llevando los codos atrás y juntando escápulas.' },
