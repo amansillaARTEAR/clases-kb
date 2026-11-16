@@ -1240,9 +1240,13 @@ function toast(t) { $('#st').textContent = t; clearTimeout(toast._t); toast._t =
 let writing = Promise.resolve();
 const serial = fn => (writing = writing.then(fn).catch(e => { console.error(e); toast(e?.code === 'quota_exceeded' ? 'Base llena: borrá clases viejas.' : 'No se pudo guardar.'); }));
 S._bm = null; S._bx = []; S._borr = []; S._aj = { items: [], borrados: [] }; S._ex = [];
+// ejercicios incluidos en el código (llegan a todas las versiones de la app)
+const EX_CODE = [
+  { id: 'round_bolsa', n: 'Round de bolsa', b: 'tec', p: 'golpes', m: ['bolsa'], a: 'bagcombo', nv: 1, on: true, d: 'Round completo en la bolsa a ritmo de pelea: golpes, patadas, rodillas y desplazamientos.' },
+];
 function combinarBanco() { if (!S._bm) return;
   // correcciones (ovv): reemplazan al ejercicio guardado solo si son más nuevas que la última edición
-  const allEx = [...S._bx, ...(S._aj.items || []), ...S._ex.flatMap(d => d.items || [])];
+  const allEx = [...S._bx, ...(S._aj.items || []), ...S._ex.flatMap(d => d.items || []), ...EX_CODE];
   const ovs = allEx.filter(e => e.ovv), plain = allEx.filter(e => !e.ovv && e.n);
   const ids0 = new Set(S._bm.map(e => e.id)); const base = [...S._bm, ...plain.filter((e, i, a) => !ids0.has(e.id) && !S._borr.includes(e.id) && a.findIndex(x => x.id === e.id) === i)];
   ovs.forEach(o => { const i = base.findIndex(e => e.id === o.id); if (i >= 0) { if (o.ovv > (base[i].ovv || 0)) base[i] = { ...base[i], ...o }; } else if (o.n && !S._borr.includes(o.id)) base.push(o); });
