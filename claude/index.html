@@ -548,7 +548,7 @@ setInterval(() => frame(performance.now()), 40);
 /* ================= ESTADO Y DATOS ================= */
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BLOQ = { cal: 'Entrada en calor', tec: 'Técnica', fis: 'Físico', core: 'Core', calma: 'Vuelta a la calma', pel: 'Competidores' };
+const BLOQ = { cal: 'Entrada en calor', tec: 'Técnica', fis: 'Circuito', core: 'Core', calma: 'Vuelta a la calma', pel: 'Competidores' };
 const PATR = { pel: { situacional: 'Situacional', ritmo: 'Ritmo de pelea', defensa: 'Defensa y contra', clinch: 'Clinch competitivo', reaccion: 'Reacción', sparring: 'Sparring con consigna' }, cal: {cardio:'Cardio / coordinación', movil:'Movilidad'}, tec: {combo:'Combinaciones', golpes:'Golpes', patadas:'Patadas', defensa:'Defensa', clinch:'Clinch', guanteo:'Guanteo'}, fis: {inf:'Tren inferior', emp:'Empuje', trac:'Tracción', pot:'Potencia', cardio:'Cardio / resistencia'}, core: {core:'Core'}, calma: {calma:'Elongación', abertura:'Aberturas'} };
 const SEMANAS = { 1: 'Base', 2: 'Volumen', 3: 'Intensidad', 4: 'Descarga' };
 const S = { pausa: (() => { try { const v = localStorage.getItem('kb_pausa'); return v === null ? 30 : +v; } catch (e) { return 30; } })(), pel: (() => { try { return !!localStorage.getItem('kb_pel'); } catch (e) { return false; } })(), db: null, banco: null, bancoV: null, mats: null, clases: [], tab: 'clase', draft: null, semana: 'auto', dur: 90, enfoque: 'mixto', loaded: { banco: false, mats: false, clases: false } };
@@ -733,7 +733,7 @@ const rint = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
 function fechaClase() { const h = horAct(), [hh, mi] = (h.hora || '20:00').split(':').map(Number), ds = h.dias && h.dias.length ? h.dias : [2, 4], d = new Date(); for (let i = 0; i < 7; i++) { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate() + i, hh || 0, mi || 0); if (ds.includes(x.getDay())) return x.toISOString(); } return d.toISOString(); }
 function bloquesBase() { const P = params(semanaAct()), rc = { w: P.rw, r: P.rr };
   return [{ b: 'cal', t: 'Movimiento articular', k: 'cont', cfg: { each: 20 }, items: [] }, { b: 'cal', t: 'Entrada en calor', k: 'cont', cfg: { each: 45 }, items: [] },
-    { b: 'fis', t: 'Físico', k: 'circ', cfg: { w: 20, r: 5, vueltas: 3 }, items: [] }, { b: 'calma', t: 'Estiramiento', k: 'cont', cfg: { each: 30 }, items: [] },
+    { b: 'fis', t: 'Circuito', k: 'circ', cfg: { w: 20, r: 5, vueltas: 3 }, items: [] }, { b: 'calma', t: 'Estiramiento', k: 'cont', cfg: { each: 30 }, items: [] },
     { b: 'pausa', t: 'Equiparse', k: 'pausa', cfg: { each: 300 }, items: [] }, { b: 'tec', t: 'Técnica', k: 'rounds', f: 'tecsin', cfg: { ...rc }, items: [] },
     { b: 'tec', t: 'Guanteos', k: 'rounds', f: 'guanteo', cfg: { ...rc }, items: [] }, { b: 'tec', t: 'Bolsa / foco / paos', k: 'rounds', f: 'elem', cfg: { ...rc }, items: [] }]; }
 const mmssC = t => { t = Math.round(t); return Math.floor(t / 60) + "'" + String(t % 60).padStart(2, '0') + '"'; };
@@ -778,19 +778,19 @@ function generar(fechaF, silencioso) {
   const grupos = n => {
     if (Math.random() < .5) { // por grupo muscular
       const gE = S.evitar.grupos || [];
-      if (!gE.includes('sup')) B.push({ b: 'fis', t: 'Físico · Tren superior', k: 'circ', f: 'sup', cfg: esq, items: conU(() => pick(n, 'fis', ['sg:empuje', 'sg:traccion', 'sg:hombros', 'sg:traccion', 'sg:empuje'], 'sup')) });
-      if (!gE.includes('inf')) B.push({ b: 'fis', t: 'Físico · Tren inferior', k: 'circ', f: 'inf', cfg: esq, items: conU(() => pick(n, 'fis', ['sg:rodilla', 'sg:cadera', 'sg:saltos', 'sg:rodilla', 'sg:cadera'], 'inf')) });
-      if (!gE.includes('core')) B.push({ b: 'core', t: 'Físico · Core', k: 'circ', cfg: esq, items: conU(() => pick(n, 'core', ['sg:abdominales', 'sg:planchas', 'sg:rotacion', 'sg:lateral', 'sg:abdominales'])) });
+      if (!gE.includes('sup')) B.push({ b: 'fis', t: 'Circuito · Tren superior', k: 'circ', f: 'sup', cfg: esq, items: conU(() => pick(n, 'fis', ['sg:empuje', 'sg:traccion', 'sg:hombros', 'sg:traccion', 'sg:empuje'], 'sup')) });
+      if (!gE.includes('inf')) B.push({ b: 'fis', t: 'Circuito · Tren inferior', k: 'circ', f: 'inf', cfg: esq, items: conU(() => pick(n, 'fis', ['sg:rodilla', 'sg:cadera', 'sg:saltos', 'sg:rodilla', 'sg:cadera'], 'inf')) });
+      if (!gE.includes('core')) B.push({ b: 'core', t: 'Circuito · Core', k: 'circ', cfg: esq, items: conU(() => pick(n, 'core', ['sg:abdominales', 'sg:planchas', 'sg:rotacion', 'sg:lateral', 'sg:abdominales'])) });
     } else { // circuito completo alternando grupos
       const it = []; U = {}; for (let i = 0; i < n; i++) it.push(...pick(1, 'fis', [rnd(['emp', 'trac'])], 'sup'), ...pick(1, 'fis', [rnd(['inf', 'pot'])], 'inf'), ...pick(1, 'core')); U = null;
-      B.push({ b: 'fis', t: 'Físico · Circuito completo', k: 'circ', cfg: { ...esq, vueltas: Math.max(2, esq.vueltas - 1) }, items: it });
+      B.push({ b: 'fis', t: 'Circuito completo', k: 'circ', cfg: { ...esq, vueltas: Math.max(2, esq.vueltas - 1) }, items: it });
     }
   };
   const tabata = () => { const v = (S.carga || 'normal') === 'liviana' ? 3 : 4; B.push({ b: 'fis', t: 'Tabata metabólico', k: 'circ', cfg: { w: 20, r: 10, vueltas: v }, items: conU(() => pick(2, 'fis', null, 'tabata')) }); };
   const isos = () => { const c = (S.carga || 'normal'), w = c === 'liviana' ? 30 : c === 'fuerte' ? 45 : 40;
     const it = conU(() => [...pick(4, 'fis', null, 'iso'), ...pick(2, 'core', null, 'iso')]);
-    B.push({ b: 'fis', t: 'Físico · Isométricos', k: 'circ', cfg: { w, r: 20, vueltas: 2 }, items: it }); };
-  const finisher = () => B.push({ b: 'fis', t: 'Físico · Final intenso', k: 'circ', cfg: { w: 20, r: 10, vueltas: sem === 4 ? 2 : 3 }, items: conU(() => [...pick(2, 'fis', ['cardio', 'pot']), ...pick(1, 'core')]) });
+    B.push({ b: 'fis', t: 'Circuito · Isométricos', k: 'circ', cfg: { w, r: 20, vueltas: 2 }, items: it }); };
+  const finisher = () => B.push({ b: 'fis', t: 'Circuito · Final intenso', k: 'circ', cfg: { w: 20, r: 10, vueltas: sem === 4 ? 2 : 3 }, items: conU(() => [...pick(2, 'fis', ['cardio', 'pot']), ...pick(1, 'core')]) });
   const estir = () => { excl.add('estir_general'); B.push({ b: 'calma', t: 'Estiramiento', k: 'cont', cfg: { each: 30 }, items: [...pick(1, 'calma', ['abertura']), ...pick(3, 'calma', ['calma'])] }); };
   const prep = () => B.push({ b: 'pausa', t: 'Preparación', k: 'pausa', f: 'prep', cfg: { each: 30 }, items: [] });
   const equip = () => B.push({ b: 'pausa', t: 'Equiparse', k: 'pausa', cfg: { each: 300 }, items: [] });
@@ -798,7 +798,7 @@ function generar(fechaF, silencioso) {
   const gua = n => n > 0 && B.push({ b: 'tec', t: 'Guanteos', k: 'rounds', f: 'guanteo', cfg: rc, items: pick(n, 'tec', null, 'guanteo') });
   const bol = n => n > 0 && B.push({ b: 'tec', t: 'Bolsa / foco / paos', k: 'rounds', f: 'elem', cfg: rc, items: pick(n, 'tec', null, 'elem') });
   const combo = () => { const it = conU(() => [...pick(1, 'fis', null, 'sup'), ...pick(1, 'fis', null, 'cardsin'), ...pick(1, 'fis', null, 'inf'), ...pick(1, 'fis', null, 'cardsin'), ...pick(1, 'core'), ...pick(1, 'fis', null, 'cardsin')]);
-    B.push({ b: 'fis', t: 'Físico · Circuito combinado', k: 'circ', cfg: { w: 40, r: 15, vueltas: sem === 4 ? 2 : 3 }, items: it }); };
+    B.push({ b: 'fis', t: 'Circuito combinado', k: 'circ', cfg: { w: 40, r: 15, vueltas: sem === 4 ? 2 : 3 }, items: it }); };
   if (fmtK === 'trad') { mov(); warm(); grupos(4); if (Math.random() < .5) tabata(); estir(); equip(); tec(P.tec); gua(P.gua); bol(P.bol); }
   else if (fmtK === 'combo') { mov(); warm(); combo(); estir(); equip(); tec(P.tec); gua(P.gua); bol(P.bol); }
   else if (fmtK === 'iso') { mov(); warm(); isos(); tabata(); estir(); equip(); tec(P.tec); gua(P.gua); bol(P.bol); }
@@ -995,7 +995,7 @@ function vClase() {
   const d = S.draft;
   if (S.avisoGen) h += `<div class="warn" style="margin:0 0 8px">${S.avisoGen}</div>`;
   { const ya10 = d.bloques.some(b => b.f === 'd10'), cs = circuitos();
-    h += `<div class="card"><b>🧩 Bloques y circuitos predefinidos</b><div class="note" style="padding:2px 0 8px">Competidores se suma a la clase. Los circuitos <b>reemplazan al físico</b>.</div><div style="display:flex;flex-wrap:wrap;gap:8px">
+    h += `<div class="card"><b>🧩 Bloques y circuitos predefinidos</b><div class="note" style="padding:2px 0 8px">Competidores se suma a la clase. Los circuitos <b>reemplazan al bloque Circuito</b>.</div><div style="display:flex;flex-wrap:wrap;gap:8px">
       ${(() => { const ya = d.bloques.some(b => b.b === 'pel'); return `<button class="btn sm" id="b-addpel" ${ya ? 'disabled' : ''}>🏆 Competidores${ya ? ' ✓' : ''}</button>`; })()}
       <button class="btn sm" id="b-add10" ${ya10 ? 'disabled' : ''}>⏱ 10 x 10${ya10 ? ' ✓' : ''}</button>
       ${cs.map(e => { const ya = d.bloques.some(b => b.k === 'circuito' && b.items[0]?.id === e.id); return `<button class="btn sm" data-addcirc="${e.id}" ${ya ? 'disabled' : ''}>🌴 ${esc(e.n)}${ya ? ' ✓' : ''}</button>`; }).join('')}</div></div>`; }
@@ -1377,9 +1377,9 @@ $('#main').addEventListener('click', e => {
   if (b.dataset.rm) { const [x, y] = b.dataset.rm.split(',').map(Number); S.draft.bloques[x].items.splice(y, 1); recalcular(); return; }
   if (b.id === 'b-addpel' && S.draft) { const B = S.draft.bloques, ib = B.findIndex(x => x.f === 'elem'), pos = ib < 0 ? B.length : ib, rc = (B.find(x => x.k === 'rounds') || {}).cfg || { w: 180, r: 60 };
     B.splice(pos, 0, { b: 'pel', t: '🏆 Competidores', k: 'rounds', f: null, cfg: { ...rc }, items: [] }); recalcular(); agregarEj(pos); return; }
-  if (b.id === 'b-add10' && S.draft) { ponerFisico(bloques10x10()); toast('El 10 x 10 reemplazó al físico'); return; }
+  if (b.id === 'b-add10' && S.draft) { ponerFisico(bloques10x10()); toast('El 10 x 10 reemplazó al circuito'); return; }
   if (b.dataset.d10 && S.draft) { const bl = S.draft.bloques[+b.dataset.d10], uno = bl.cfg.vueltas !== 1; bl.items = d10Items(bl.g, uno ? 10 : 2); bl.cfg = { ...bl.cfg, vueltas: uno ? 1 : 5 }; recalcular(); return; }
-  if (b.dataset.addcirc && S.draft) { const e = exById(b.dataset.addcirc); ponerFisico([{ b: 'fis', t: '🌴 ' + e.n, k: 'circuito', f: null, cfg: { w: 360, r: 60, rondas: 1 }, items: [{ id: e.id }] }]); toast('El ' + e.n + ' reemplazó al físico'); return; }
+  if (b.dataset.addcirc && S.draft) { const e = exById(b.dataset.addcirc); ponerFisico([{ b: 'fis', t: '🌴 ' + e.n, k: 'circuito', f: null, cfg: { w: 360, r: 60, rondas: 1 }, items: [{ id: e.id }] }]); toast('El ' + e.n + ' reemplazó al circuito'); return; }
   if (b.dataset.par && S.draft) { editarParejas(+b.dataset.par); return; }
   if (b.dataset.ren && S.draft) { const bl = S.draft.bloques[+b.dataset.ren], sp = b.parentNode.querySelector('.bt'), inp = document.createElement('input');
     inp.value = titulo(bl); inp.className = 'reni'; sp.replaceWith(inp); b.style.display = 'none'; inp.focus(); inp.select();
