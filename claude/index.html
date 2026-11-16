@@ -771,7 +771,7 @@ function bloquesBase() { const P = params(semanaAct()), rc = { w: P.rw, r: P.rr 
   return [{ b: 'cal', t: 'Movimiento articular', k: 'cont', cfg: { each: 20 }, items: [] }, { b: 'cal', t: 'Entrada en calor', k: 'cont', cfg: { each: 45 }, items: [] },
     { b: 'fis', t: 'Circuito', k: 'circ', cfg: { w: 20, r: 5, vueltas: 3 }, items: [] }, { b: 'calma', t: 'Estiramiento', k: 'cont', cfg: { each: 30 }, items: [] },
     { b: 'pausa', t: 'Equiparse', k: 'pausa', cfg: { each: 300 }, items: [] }, { b: 'tec', t: 'Técnica', k: 'rounds', f: 'tecsin', cfg: { ...rc }, items: [] },
-    { b: 'tec', t: 'Guanteos', k: 'rounds', f: 'guanteo', cfg: { ...rc }, items: [] }, { b: 'tec', t: 'Bolsa / foco / paos', k: 'rounds', f: 'elem', cfg: { ...rc }, items: [] }, { b: 'calma', t: 'Estiramiento final', k: 'cont', f: 'final', cfg: { each: 30 }, items: [] }]; }
+    { b: 'tec', t: 'Guanteos', k: 'rounds', f: 'guanteo', cfg: { ...rc }, items: [] }, { b: 'tec', t: 'Bolsa | Foco & Paos', k: 'rounds', f: 'elem', cfg: { ...rc }, items: [] }, { b: 'calma', t: 'Estiramiento final', k: 'cont', f: 'final', cfg: { each: 30 }, items: [] }]; }
 const mmssC = t => { t = Math.round(t); return Math.floor(t / 60) + "'" + String(t % 60).padStart(2, '0') + '"'; };
 function tiemposHtml(T) { if (!T || !Object.keys(T).length) return ''; const L = Object.entries(T).map(([a, v]) => [a, v.filter(x => x != null)]).filter(x => x[1].length).sort((x, y) => Math.min(...x[1]) - Math.min(...y[1]));
   return `<div class="note" style="text-align:center">⏱ ${L.map(([a, v], i) => `${i === 0 ? '🥇 ' : ''}<b>${esc(a)}</b> ${v.map(mmssC).join(' / ')}`).join(' · ')}</div>`; }
@@ -839,7 +839,7 @@ function generar(fechaF, silencioso) {
   const equip = () => B.push({ b: 'pausa', t: 'Equiparse', k: 'pausa', cfg: { each: 300 }, items: [] });
   const tec = n => n > 0 && B.push({ b: 'tec', t: 'Técnica', k: 'rounds', f: 'tecsin', cfg: rc, items: pick(n, 'tec', null, 'tecsin') });
   const gua = n => n > 0 && B.push({ b: 'tec', t: 'Guanteos', k: 'rounds', f: 'guanteo', cfg: rc, items: pick(n, 'tec', null, 'guanteo') });
-  const bol = n => n > 0 && B.push({ b: 'tec', t: 'Bolsa / foco / paos', k: 'rounds', f: 'elem', cfg: rc, items: pick(n, 'tec', null, 'elem') });
+  const bol = n => n > 0 && B.push({ b: 'tec', t: 'Bolsa | Foco & Paos', k: 'rounds', f: 'elem', cfg: rc, items: pick(n, 'tec', null, 'elem') });
   const combo = () => { const it = conU(() => [...pick(1, 'fis', null, 'sup'), ...pick(1, 'fis', null, 'cardsin'), ...pick(1, 'fis', null, 'inf'), ...pick(1, 'fis', null, 'cardsin'), ...pick(1, 'core'), ...pick(1, 'fis', null, 'cardsin')]);
     B.push({ b: 'fis', t: 'Circuito combinado', k: 'circ', cfg: { w: 40, r: 15, vueltas: sem === 4 ? 2 : 3 }, items: it }); };
   if (fmtK === 'trad') { mov(); warm(); grupos(4); if (Math.random() < .5) tabata(); estir(); equip(); tec(2); gua(P.gua); bol(P.bol); estirFin(); }
@@ -883,7 +883,7 @@ function cambiar(bi, ii) {
   bl.items[ii] = { ...x, b: ib, f: ifk, rounds: it.rounds };
   saveDraftLocal(); render();
 }
-const titulo = bl => bl.t || BLOQ[bl.b] || '';
+const titulo = bl => (bl.t === 'Bolsa / foco / paos' ? 'Bolsa | Foco & Paos' : bl.t) || BLOQ[bl.b] || '';
 function cfgEdit(bl, bi) {
   const c = bl.cfg;
   const stp = (k, txt, lab) => `<div class="stp"><small>${lab}</small><div><button data-step="${bi},${k},-1" aria-label="Menos">−</button><span>${txt}</span><button data-step="${bi},${k},1" aria-label="Más">+</button></div></div>`;
