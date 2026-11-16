@@ -837,7 +837,7 @@ function generar(fechaF, silencioso) {
   else if (fmtK === 'combo') { mov(); warm(); combo(); estir(); equip(); tec(P.tec); gua(P.gua); bol(P.bol); }
   else if (fmtK === 'iso') { mov(); warm(); isos(); tabata(); estir(); equip(); tec(P.tec); gua(P.gua); bol(P.bol); }
   else { mov(); warm(); grupos(4); tabata(); estir(); equip(); gua(Math.max(2, P.gua - 1)); bol(Math.max(1, P.bol - 1)); }
-  if (S.pel) { const it = pick(3, 'pel', ['situacional', 'defensa', 'ritmo', 'clinch', 'reaccion', 'sparring'].sort(() => Math.random() - .5)); if (it.length) { const ib = B.findIndex(b => b.f === 'elem'); B.splice(ib < 0 ? B.length : ib, 0, { b: 'pel', t: '🏆 Competidores', k: 'rounds', f: null, cfg: rc, items: it }); } }
+  if (false) { const it = pick(3, 'pel', ['situacional', 'defensa', 'ritmo', 'clinch', 'reaccion', 'sparring'].sort(() => Math.random() - .5)); if (it.length) { const ib = B.findIndex(b => b.f === 'elem'); B.splice(ib < 0 ? B.length : ib, 0, { b: 'pel', t: '🏆 Competidores', k: 'rounds', f: null, cfg: rc, items: it }); } }
   for (let i = B.length - 1; i >= 0; i--) if (B[i].k !== 'pausa' && !B[i].items.length) B.splice(i, 1);
   B.forEach(bl => { bl.items.forEach(it => it.rounds = 1); bl.min = Math.round(durBloque(bl) / 60); });
   S.draft = { sede: sedeAct().id, hor: horAct().id, fecha: fechaF || fechaClase(), semana: sem, carga: S.carga || 'normal', formato: fmtK, esq: e0, dur: durTotal(B), bloques: B };
@@ -1016,7 +1016,6 @@ function vClase() {
     <div><label>Carga</label><select id="f-carga">${Object.entries(CARGAS).map(([k, v]) => `<option value="${k}" ${(S.carga || 'normal') === k ? 'selected' : ''}>${v}</option>`).join('')}</select></div>
     <div><label>Transición</label><select id="f-pausa" title="Tiempo por defecto entre bloques y entre vueltas">${[0, 15, 30, 45, 60, 90].map(v => `<option value="${v}" ${PAUSA() === v ? 'selected' : ''}>${v ? v + ' seg' : 'Sin pausa'}</option>`).join('')}</select></div>
     <button class="btn" id="b-evitar">🩹 Lesiones${nEvitar() ? ` (${nEvitar()})` : ''}</button>
-    <label class="pill" title="Agrega un bloque de trabajos específicos para competidores"><input type="checkbox" id="f-pel" ${S.pel ? 'checked' : ''}>🏆 Competidores</label>
     <button class="btn pri" id="b-gen" ${S.banco?.length ? '' : 'disabled'}>Generar clase</button></div>
     <div class="note">Cada clase cambia ejercicios y formato para no repetir lo de las últimas clases.</div>${nEvitar() ? `<div class="warn" style="margin:6px 0 0">🩹 Cuidando: ${txtEvitar()}</div>` : ''}
     ${(() => { const sg = sugerencia(); return sg && (S.carga || 'normal') !== sg.carga ? `<div class="sugbox"><span style="font-size:20px">💡</span><div style="flex:1;min-width:0;line-height:1.35">${sg.txt}<br>Sugerencia: carga <b>${CARGAS[sg.carga].toLowerCase()}</b></div><button class="btn sm pri" data-sug="${sg.carga}" style="white-space:nowrap">Usar</button></div>` : ''; })()}
