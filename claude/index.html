@@ -824,7 +824,7 @@ const titulo = bl => bl.t || BLOQ[bl.b] || '';
 function cfgEdit(bl, bi) {
   const c = bl.cfg;
   const stp = (k, txt, lab) => `<div class="stp"><small>${lab}</small><div><button data-step="${bi},${k},-1" aria-label="Menos">−</button><span>${txt}</span><button data-step="${bi},${k},1" aria-label="Más">+</button></div></div>`;
-  if (bl.k === 'pausa') return `<div class="cfgbar">${stp('each', fmtC(c.each), 'Descanso')}</div>`;
+  if (bl.k === 'pausa') return `<div class="cfgbar">${stp('each', fmtC(c.each), 'Duración')}</div>`;
   if (bl.k === 'circuito') return `<div class="cfgbar">${stp('w', fmtC(c.w), 'Tiempo máx.')}${stp('r', fmt0(c.r), 'Cambio')}${stp('rondas', String(c.rondas || 1), 'Rondas')}</div><div class="note" style="text-align:center">Uno hace el circuito y el compañero lo asiste; después cambian.</div><div class="row" style="justify-content:center;align-items:center;gap:8px;margin:6px 0"><button class="btn sm" data-par="${bi}">👥 ${bl.parejas?.length ? 'Cambiar parejas' : 'Armar parejas'}</button></div>`;
   const pa = '', cb = `<div class="cfgbar${bl.items.length > 1 ? ' ind' : ''}">`;
   if (bl.k === 'cont') return `${cb}${stp('each', fmtC(c.each), 'Trabajo')}${stp('r', fmt0(c.r || 0), 'Descanso')}${pa}</div>`;
