@@ -1338,7 +1338,7 @@ $('#main').addEventListener('change', e => {
   if (t.id === 'tc-c') { TC.combo = t.value; try { localStorage.setItem('kb_timer', JSON.stringify(TC)); } catch (x) {} }
   if (t.id === 'f-pausa') { S.pausa = +t.value; try { localStorage.setItem('kb_pausa', S.pausa); } catch (x) {} if (S.draft) recalcular(); }
   if (t.id === 'f-pel') { S.pel = t.checked; try { localStorage.setItem('kb_pel', S.pel ? '1' : ''); } catch (x) {} }
-  if (t.id === 'f-carga') S.carga = t.value; if (t.id === 'f-fmt') S.formato = t.value; if (t.id === 'f-dur') S.dur = +t.value; if (t.id === 'f-enf') S.enfoque = t.value;
+  if (t.id === 'f-carga') { S.carga = t.value; if (S.draft) { S.draft.carga = S.carga; saveDraftLocal(); render(); } } if (t.id === 'f-fmt') S.formato = t.value; if (t.id === 'f-dur') S.dur = +t.value; if (t.id === 'f-enf') S.enfoque = t.value;
   if (t.id === 'f-bq') { fB = t.value; render(); }
   if (t.dataset.cfg && S.draft) { const [bi, k] = t.dataset.cfg.split(','), bl = S.draft.bloques[+bi]; let v = Math.max(0, +t.value || 0);
     if ((bl.k === 'pausa' && k === 'each') || (bl.k === 'rounds' && k === 'w')) v = Math.round(v * 60);
@@ -1416,7 +1416,7 @@ $('#main').addEventListener('click', e => {
   if (b.dataset.ejt) { S.ejTodos = b.dataset.ejt === '1'; render(); return; }
   if (b.dataset.ht) { S.histTodos = b.dataset.ht === '1'; render(); return; }
   if (b.id === 'b-alt') { S.alTodos = !S.alTodos; render(); return; }
-  if (b.dataset.sug) { S.carga = b.dataset.sug; render(); return; }
+  if (b.dataset.sug) { S.carga = b.dataset.sug; if (S.draft) { S.draft.carga = S.carga; saveDraftLocal(); } toast('✓ Carga ' + CARGAS[S.carga].toLowerCase() + ' aplicada'); render(); return; }
   if (b.id === 'b-plan') { b.disabled = true; b.textContent = 'Planificando…'; planificarMes(); return; }
   if (b.dataset.plo) { const p = S.plan.find(x => x._id === b.dataset.plo); if (p) { S.draft = JSON.parse(JSON.stringify({ ...p, _id: null, _saved: false, _plan: p._id })); delete S.draft._id; saveDraftLocal(); render(); window.scrollTo(0, 0); } return; }
   if (b.dataset.pld) { if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = '¿Borrar?'; return; } S.db && serial(() => S.db.doc('plan/' + b.dataset.pld).delete()); return; }
