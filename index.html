@@ -717,6 +717,11 @@ function bloquesGrupos() { const uso = usoReciente(), excl = new Set(), esq = { 
   return [{ b: 'fis', t: '💪 3 x 4 · Tren superior', k: 'circ', f: 'sup', g: 'grp', cfg: { ...esq }, items: mk('fis', ['sg:empuje', 'sg:traccion', 'sg:hombros', 'sg:traccion'], 'sup') },
     { b: 'fis', t: '💪 3 x 4 · Tren inferior', k: 'circ', f: 'inf', g: 'grp', cfg: { ...esq }, items: mk('fis', ['sg:rodilla', 'sg:cadera', 'sg:saltos', 'sg:rodilla'], 'inf') },
     { b: 'core', t: '💪 3 x 4 · Core', k: 'circ', g: 'grp', cfg: { ...esq }, items: mk('core', ['sg:abdominales', 'sg:planchas', 'sg:rotacion', 'sg:lateral']) }]; }
+// circuito predefinido: si la clase está vacía, se generan también los demás bloques
+function ponerPreset(fn, nom) { const vacia = !S.draft.bloques.some(b => b.items.length && !['fis', 'core'].includes(b.b));
+  if (vacia) { const keep = { _plan: S.draft._plan, fecha: S.draft.fecha }; S._sinFis = 1; try { generar(keep.fecha, true); } finally { S._sinFis = 0; } S.draft.formato = ''; if (keep._plan) S.draft._plan = keep._plan; }
+  ponerFisico(fn()); if (vacia) { ajustarDuracion(S.draft.bloques); recalcular(); }
+  toast(vacia ? `Clase armada con el ${nom}` : `El ${nom} reemplazó al circuito`); }
 function bloques10x10() { return D10G.map(([g, , t], k) => ({ b: g === 'core' ? 'core' : 'fis', t: '⏱ 10 x 10 · ' + t, k: 'circ', f: 'd10', g, cfg: { w: 10, r: 10, vueltas: 1, rv: 10, ...(k ? { pa: 60 } : {}) }, items: d10Items(g, 10) })); }
 // estiramientos ordenados por zona del cuerpo, de la cabeza a los pies
 const ZCUERPO = [/cuello|cabeza/, /hombro|tricep|brazo|antebrazo|muneca|pecho|dorsal/, /espalda|columna|torsion|cobra|abdomin|nino/, /lumbar|cadera|gluteo|mariposa|aductor/, /abertura|isquio|cuadricep|pierna/, /pantorrilla|tobillo|gemelo/];
@@ -847,7 +852,7 @@ function generar(fechaF, silencioso) {
   if (!S.banco?.length) return;
   const sem = semanaAct(), P = params(sem), uso = usoReciente(), excl = new Set(), B = [];
   const ult = S.clases[0] || {};
-  const fmtK = rnd(Object.keys(FORMATOS).filter(k => k !== ult.formato));
+  const fmtK = rnd(Object.keys(FORMATOS).filter(k => k !== ult.formato && !(S._sinFis && k === 'fisico')));
   // esquema de intervalos distinto al de la última clase, ajustado por semana del ciclo
   const e0 = rnd(ESQUEMAS.length > 1 ? ESQUEMAS.filter(x => JSON.stringify(x) !== JSON.stringify(ult.esq)) : ESQUEMAS);
   const esq = { w: e0.w + (sem === 2 || sem === 3 ? 5 : 0), r: sem === 3 ? Math.max(5, e0.r - 5) : e0.r, vueltas: sem === 4 ? Math.max(2, e0.v - 1) : e0.v };
@@ -911,7 +916,7 @@ function ajustarDuracion(B) { const T = (minutosClase() + 5) * 60; // se permite
     const cands = [rb('guanteo'), rb('elem'), rb('tecsin')].filter(Boolean); let hecho = false;
     for (const bl of cands) { const it = [...bl.items].reverse().find(i => (i.rounds || 1) > 1); if (it) { it.rounds--; hecho = true; break; } }
     if (!hecho) for (const bl of cands) if (bl.items.length > (bl.f === 'tecsin' ? 2 : 1)) { bl.items.pop(); hecho = true; break; }
-    if (!hecho) { const c = B.filter(b => b.k === 'circ' && (b.cfg.vueltas || 1) > 2).pop(); if (c) { c.cfg = { ...c.cfg, vueltas: c.cfg.vueltas - 1 }; hecho = true; } }
+    if (!hecho) { const c = B.filter(b => b.k === 'circ' && !b.g && (b.cfg.vueltas || 1) > 2).pop(); if (c) { c.cfg = { ...c.cfg, vueltas: c.cfg.vueltas - 1 }; hecho = true; } }
     if (!hecho) { const i = B.findIndex(b => /Tabata/.test(b.t)); if (i >= 0) { B.splice(i, 1); hecho = true; } }
     if (!hecho) break; }
   for (let g = 0, k = 0; g < 40; g++, k++) { // agregar rounds de guanteo y bolsa alternados
@@ -1559,8 +1564,8 @@ $('#main').addEventListener('click', e => {
   if (b.dataset.rm) { const [x, y] = b.dataset.rm.split(',').map(Number); S.draft.bloques[x].items.splice(y, 1); recalcular(); return; }
   if (b.id === 'b-addpel' && S.draft) { const B = S.draft.bloques, ib = B.findIndex(x => x.f === 'elem'), pos = ib < 0 ? B.length : ib, rc = (B.find(x => x.k === 'rounds') || {}).cfg || { w: 180, r: 60 };
     B.splice(pos, 0, { b: 'pel', t: '🏆 Competencia', k: 'rounds', f: null, cfg: { ...rc }, items: [] }); recalcular(); agregarEj(pos); return; }
-  if (b.id === 'b-addgrp' && S.draft) { ponerFisico(bloquesGrupos()); toast('El 3 x 4 reemplazó al circuito'); return; }
-  if (b.id === 'b-add10' && S.draft) { ponerFisico(bloques10x10()); toast('El 10 x 10 reemplazó al circuito'); return; }
+  if (b.id === 'b-addgrp' && S.draft) { ponerPreset(bloquesGrupos, '3 x 4'); return; }
+  if (b.id === 'b-add10' && S.draft) { ponerPreset(bloques10x10, '10 x 10'); return; }
   if (b.dataset.d10 && S.draft) { const bl = S.draft.bloques[+b.dataset.d10], uno = bl.cfg.vueltas !== 1; bl.items = d10Items(bl.g, uno ? 10 : 2); bl.cfg = { ...bl.cfg, vueltas: uno ? 1 : 5 }; recalcular(); return; }
   if (b.dataset.addcirc && S.draft) { const e = exById(b.dataset.addcirc); ponerFisico([{ b: 'fis', t: '🌴 ' + e.n, k: 'circuito', f: null, cfg: { w: 360, r: 60, rondas: 1 }, items: [{ id: e.id }] }]); toast('El ' + e.n + ' reemplazó al circuito'); return; }
   if (b.dataset.par && S.draft) { editarParejas(+b.dataset.par); return; }
