@@ -610,7 +610,7 @@ function evitado(e) {
   if (e.b === 'core' && g.includes('core')) return true;
   return false;
 }
-const GRUPOS_MAT = { mancuernas: 'Mancuernas', barra: 'Barra NO olímpica', barra_olimpica: 'Barra olímpica', discos: 'Discos', kettlebell: 'Kettlebell', balon: 'Balón medicinal' };
+const GRUPOS_MAT = { mancuernas: 'Mancuernas', barra: 'Barra NO olímpica', barra_olimpica: 'Barra olímpica', discos: 'Discos', kettlebell: 'Kettlebell', balon: 'Balón medicinal', bandas: 'Bandas elásticas' };
 const grp = m => m.g || m.id;
 const cantPropia = m => m.c ?? DEFC[m.id] ?? 99;
 const miembros = id => (S.mats || []).filter(m => m.g === id && m.on && cantPropia(m) > 0);
@@ -1691,7 +1691,8 @@ render();
   db.doc(S.priv ? P_('alumnos') : 'config/alumnos').onSnapshot(s => { S.alumnos = s.exists ? [...(s.data().lista || [])] : []; S.alDatos = s.exists ? JSON.parse(JSON.stringify(s.data().datos || {})) : {}; render(); }, err);
   db.doc(S.priv ? P_('evitar') : 'config/evitar').onSnapshot(s => { if (s.exists) { const d = s.data(); S.evitar = { zonas: [...(d.zonas || [])], grupos: [...(d.grupos || [])], ids: [...(d.ids || [])] }; } render(); }, err);
   const setMats = () => { const src = S._matsUser || S._matsShared || []; S.mats = src.map(x => ({ ...x })); S.loaded.mats = true;
-    // una sola vez: agregar bandas elásticas al lugar principal
+    // una sola vez: bandas elásticas por color en el lugar principal
+    try { if (!S.priv && S.mats.length && sedeAct().id === sedes()[0].id && !localStorage.getItem('kb_mig_bandas2')) { localStorage.setItem('kb_mig_bandas2', 1); if (!S.mats.some(m => m.g === 'bandas')) { S.mats = S.mats.filter(m => m.id !== 'bandas'); [['amarilla', 'Banda amarilla (la más fina)'], ['roja', 'Banda roja'], ['verde', 'Banda verde'], ['violeta', 'Banda violeta'], ['negra', 'Banda negra'], ['verde_ancha', 'Banda verde ancha (Tushka)']].forEach(([k, n]) => S.mats.push({ id: 'banda_' + k, n, g: 'bandas', on: true, c: 1 })); saveMats(); } } } catch (e) {}
     try { if (!S.priv && S.mats.length && sedeAct().id === sedes()[0].id && !localStorage.getItem('kb_mig_bandas')) { localStorage.setItem('kb_mig_bandas', 1); if (!S.mats.some(m => m.id === 'bandas' || /banda/i.test(m.n || ''))) { S.mats.push({ id: 'bandas', n: 'Bandas elásticas', on: true, c: 6 }); saveMats(); } } } catch (e) {}
     render(); };
   let unMats = null; S._subMats = () => { try { unMats && unMats(); } catch (e) {} const path = matsDoc(sedeAct().id); unMats = db.doc(path).onSnapshot(s => { S._matsShared = s.exists ? (s.data().items || []) : []; setMats(); }, err); };
