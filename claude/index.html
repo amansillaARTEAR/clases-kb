@@ -1635,9 +1635,9 @@ $('#lv-combo').onclick = () => { live.comboOn = !live.comboOn; $('#lv-combo').st
 /* ================= INICIO ================= */
 render();
 (async () => {
-  const to = setTimeout(() => { if (!S.loaded.banco) toast('No se puede conectar con la base todavía…'); }, 10000);
   try { tts = await claude.use('tts'); } catch (e) {}
   let db = null; try { db = await claude.use('db'); } catch (e) {}
+  const to = setTimeout(() => { if (!S.loaded.banco) toast('No se puede conectar con la base todavía…'); }, 10000);
   if (!db) { clearTimeout(to); S.loaded = { banco: true, mats: true, clases: true }; S.banco = []; S.mats = []; render(); toast('Iniciá sesión para usar la base de datos.'); return; }
   S.db = db;
   let us = null; try { us = await claude.use('user'); } catch (e) {}
