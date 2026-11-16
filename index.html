@@ -1272,7 +1272,7 @@ const serial = fn => (writing = writing.then(fn).catch(e => { console.error(e); 
 S._bm = null; S._bx = []; S._borr = []; S._aj = { items: [], borrados: [] }; S._ex = [];
 // ejercicios incluidos en el código (llegan a todas las versiones de la app)
 const EX_CODE = [
-  { id: 'round_bolsa', n: 'Round de bolsa', b: 'tec', p: 'golpes', m: ['bolsa'], a: 'bagcombo', nv: 1, on: true, d: 'Round completo en la bolsa a ritmo de pelea: golpes, patadas, rodillas y desplazamientos.' },
+  { id: 'bolsa_libre', ovv: 100, n: 'Round de bolsa', d: 'Round completo en la bolsa a ritmo de pelea: golpes, patadas, rodillas y desplazamientos.' },
 ];
 function combinarBanco() { if (!S._bm) return;
   // correcciones (ovv): reemplazan al ejercicio guardado solo si son más nuevas que la última edición
