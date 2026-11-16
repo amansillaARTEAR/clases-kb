@@ -718,9 +718,19 @@ function bloquesGrupos() { const uso = usoReciente(), excl = new Set(), esq = { 
     { b: 'fis', t: '💪 3 x 4 · Tren inferior', k: 'circ', f: 'inf', g: 'grp', cfg: { ...esq }, items: mk('fis', ['sg:rodilla', 'sg:cadera', 'sg:saltos', 'sg:rodilla'], 'inf') },
     { b: 'core', t: '💪 3 x 4 · Core', k: 'circ', g: 'grp', cfg: { ...esq }, items: mk('core', ['sg:abdominales', 'sg:planchas', 'sg:rotacion', 'sg:lateral']) }]; }
 // circuito predefinido: si la clase está vacía, se generan también los demás bloques
-function ponerPreset(fn, nom) { const vacia = !S.draft.bloques.some(b => b.items.length && !['fis', 'core'].includes(b.b));
+// equilibrio: si la parte física es exigente, la entrada en calor es suave
+function fisicoDuro(B) { const F = B.filter(b => (b.b === 'fis' || b.b === 'core') && b.k !== 'pausa');
+  return F.some(b => /Tabata/.test(b.t) || b.k === 'circuito' || b.f === 'd10') || F.reduce((a, b) => a + durBloque(b), 0) >= 21 * 60; }
+function equilibrarCalor(B, intens) { const dura = intens === 'dura' || (intens !== 'media' && fisicoDuro(B)), w = B.find(b => b.b === 'cal' && b.t !== 'Movimiento articular'); if (!w) return;
+  const base = w.t.replace(/ \(suave\)$/, '');
+  if (dura) { w.cfg = { ...w.cfg, each: w.f === 'soga' ? 180 : 30 }; w.t = base + ' (suave)'; w.items.forEach(i => delete i.w); }
+  else { w.cfg = { ...w.cfg, each: w.f === 'soga' ? 300 : 45 }; w.t = base; } }
+function ponerPreset(fn, nom, intens) { const vacia = !S.draft.bloques.some(b => b.items.length && !['fis', 'core'].includes(b.b));
   if (vacia) { const keep = { _plan: S.draft._plan, fecha: S.draft.fecha }; S._sinFis = 1; try { generar(keep.fecha, true); } finally { S._sinFis = 0; } S.draft.formato = ''; if (keep._plan) S.draft._plan = keep._plan; }
-  ponerFisico(fn()); if (vacia) { ajustarDuracion(S.draft.bloques); recalcular(); }
+  ponerFisico(fn());
+  // entrada en calor equilibrada con la parte física: si el circuito es exigente, la entrada en calor es más suave
+  if (vacia) equilibrarCalor(S.draft.bloques, intens);
+  if (vacia) { ajustarDuracion(S.draft.bloques); recalcular(); }
   toast(vacia ? `Clase armada con el ${nom}` : `El ${nom} reemplazó al circuito`); }
 function bloques10x10() { return D10G.map(([g, , t], k) => ({ b: g === 'core' ? 'core' : 'fis', t: '⏱ 10 x 10 · ' + t, k: 'circ', f: 'd10', g, cfg: { w: 10, r: 10, vueltas: 1, rv: 10, ...(k ? { pa: 60 } : {}) }, items: d10Items(g, 10) })); }
 // estiramientos ordenados por zona del cuerpo, de la cabeza a los pies
@@ -901,6 +911,7 @@ function generar(fechaF, silencioso) {
   if (false) { const it = pick(3, 'pel', ['situacional', 'defensa', 'ritmo', 'clinch', 'reaccion', 'sparring'].sort(() => Math.random() - .5)); if (it.length) { const ib = B.findIndex(b => b.f === 'elem'); B.splice(ib < 0 ? B.length : ib, 0, { b: 'pel', t: '🏆 Competidores', k: 'rounds', f: null, cfg: rc, items: it }); } }
   for (let i = B.length - 1; i >= 0; i--) if (B[i].k !== 'pausa' && !B[i].items.length) B.splice(i, 1);
   B.forEach(bl => { bl.items.forEach(it => it.rounds = 1); });
+  equilibrarCalor(B);
   ajustarDuracion(B);
   B.forEach(bl => { bl.min = Math.round(durBloque(bl) / 60); });
   S.draft = { sede: sedeAct().id, hor: horAct().id, fecha: fechaF || fechaClase(), semana: sem, carga: S.carga || 'normal', formato: fmtK, esq: e0, dur: durTotal(B), bloques: B };
@@ -919,10 +930,16 @@ function ajustarDuracion(B) { const T = (minutosClase() + 5) * 60; // se permite
     if (!hecho) { const c = B.filter(b => b.k === 'circ' && !b.g && (b.cfg.vueltas || 1) > 2).pop(); if (c) { c.cfg = { ...c.cfg, vueltas: c.cfg.vueltas - 1 }; hecho = true; } }
     if (!hecho) { const i = B.findIndex(b => /Tabata/.test(b.t)); if (i >= 0) { B.splice(i, 1); hecho = true; } }
     if (!hecho) break; }
-  for (let g = 0, k = 0; g < 40; g++, k++) { // agregar rounds de guanteo y bolsa alternados
-    const bl = [rb('guanteo'), rb('elem')].filter(Boolean)[k % 2] || rb('guanteo') || rb('elem'); if (!bl) break;
+  // agregar de forma balanceada: un round por vez rotando guanteo, bolsa y técnica, con topes para que nada se coma la clase
+  const TOPE = { guanteo: 5, elem: 4, tecsin: 3 }, tot = bl => bl.items.reduce((a, i) => a + (i.rounds || 1), 0);
+  for (let g = 0, k = 0, fallos = 0; g < 60 && fallos < 3; g++, k++) { const f = ['guanteo', 'elem', 'tecsin'][k % 3], bl = rb(f);
+    if (!bl || tot(bl) >= TOPE[f]) { fallos++; continue; }
     const it = bl.items.reduce((m, i) => (i.rounds || 1) < (m.rounds || 1) ? i : m, bl.items[0]); it.rounds = (it.rounds || 1) + 1;
-    if (segTotal(B) > T) { it.rounds--; const otro = [rb('guanteo'), rb('elem')].filter(Boolean)[(k + 1) % 2]; if (!otro || otro === bl) break; const i2 = otro.items[0]; i2.rounds = (i2.rounds || 1) + 1; if (segTotal(B) > T) { i2.rounds--; break; } } }
+    if (segTotal(B) > T) { it.rounds--; fallos++; } else fallos = 0; }
+  // si todavía falta, sumar vueltas a los circuitos (sin pasarse)
+  for (let g = 0; g < 10; g++) { const c = B.find(b => b.k === 'circ' && !b.g && (b.cfg.vueltas || 1) < 4) || B.find(b => b.k === 'circuito' && (b.cfg.rondas || 1) < 2); if (!c) break;
+    const prev = { ...c.cfg }; if (c.k === 'circ') c.cfg = { ...c.cfg, vueltas: (c.cfg.vueltas || 1) + 1 }; else c.cfg = { ...c.cfg, rondas: (c.cfg.rondas || 1) + 1 };
+    if (segTotal(B) > T) { c.cfg = prev; break; } }
 }
 function recalcular() { S.draft.bloques.forEach(bl => bl.min = Math.round(durBloque(bl) / 60)); S.draft.dur = durTotal(S.draft.bloques); saveDraftLocal(); render(); }
 function cambiar(bi, ii) {
@@ -1564,10 +1581,10 @@ $('#main').addEventListener('click', e => {
   if (b.dataset.rm) { const [x, y] = b.dataset.rm.split(',').map(Number); S.draft.bloques[x].items.splice(y, 1); recalcular(); return; }
   if (b.id === 'b-addpel' && S.draft) { const B = S.draft.bloques, ib = B.findIndex(x => x.f === 'elem'), pos = ib < 0 ? B.length : ib, rc = (B.find(x => x.k === 'rounds') || {}).cfg || { w: 180, r: 60 };
     B.splice(pos, 0, { b: 'pel', t: '🏆 Competencia', k: 'rounds', f: null, cfg: { ...rc }, items: [] }); recalcular(); agregarEj(pos); return; }
-  if (b.id === 'b-addgrp' && S.draft) { ponerPreset(bloquesGrupos, '3 x 4'); return; }
-  if (b.id === 'b-add10' && S.draft) { ponerPreset(bloques10x10, '10 x 10'); return; }
+  if (b.id === 'b-addgrp' && S.draft) { ponerPreset(bloquesGrupos, '3 x 4', 'media'); return; }
+  if (b.id === 'b-add10' && S.draft) { ponerPreset(bloques10x10, '10 x 10', 'dura'); return; }
   if (b.dataset.d10 && S.draft) { const bl = S.draft.bloques[+b.dataset.d10], uno = bl.cfg.vueltas !== 1; bl.items = d10Items(bl.g, uno ? 10 : 2); bl.cfg = { ...bl.cfg, vueltas: uno ? 1 : 5 }; recalcular(); return; }
-  if (b.dataset.addcirc && S.draft) { const e = exById(b.dataset.addcirc); ponerFisico([{ b: 'fis', t: '🌴 ' + e.n, k: 'circuito', f: null, cfg: { w: 360, r: 60, rondas: 1 }, items: [{ id: e.id }] }]); toast('El ' + e.n + ' reemplazó al circuito'); return; }
+  if (b.dataset.addcirc && S.draft) { const e = exById(b.dataset.addcirc); ponerPreset(() => [{ b: 'fis', t: '🌴 ' + e.n, k: 'circuito', f: null, cfg: { w: 360, r: 60, rondas: 1 }, items: [{ id: e.id }] }], e.n, 'dura'); return; }
   if (b.dataset.par && S.draft) { editarParejas(+b.dataset.par); return; }
   if (b.dataset.ren && S.draft) { const bl = S.draft.bloques[+b.dataset.ren], sp = b.parentNode.querySelector('.bt'), inp = document.createElement('input');
     inp.value = titulo(bl); inp.className = 'reni'; sp.replaceWith(inp); b.style.display = 'none'; inp.focus(); inp.select();
