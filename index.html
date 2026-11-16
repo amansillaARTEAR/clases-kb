@@ -1690,7 +1690,10 @@ render();
   db.collection('plan').onSnapshot(s => { const hoy = new Date(); hoy.setHours(0, 0, 0, 0); S.plan = s.docs.map(d => ({ ...d.data(), _id: d.id })).filter(p => new Date(p.fecha) >= hoy).sort((x, y) => x.fecha.localeCompare(y.fecha)); render(); }, err);
   db.doc(S.priv ? P_('alumnos') : 'config/alumnos').onSnapshot(s => { S.alumnos = s.exists ? [...(s.data().lista || [])] : []; S.alDatos = s.exists ? JSON.parse(JSON.stringify(s.data().datos || {})) : {}; render(); }, err);
   db.doc(S.priv ? P_('evitar') : 'config/evitar').onSnapshot(s => { if (s.exists) { const d = s.data(); S.evitar = { zonas: [...(d.zonas || [])], grupos: [...(d.grupos || [])], ids: [...(d.ids || [])] }; } render(); }, err);
-  const setMats = () => { const src = S._matsUser || S._matsShared || []; S.mats = src.map(x => ({ ...x })); S.loaded.mats = true; render(); };
+  const setMats = () => { const src = S._matsUser || S._matsShared || []; S.mats = src.map(x => ({ ...x })); S.loaded.mats = true;
+    // una sola vez: agregar bandas elásticas al lugar principal
+    try { if (!S.priv && S.mats.length && sedeAct().id === sedes()[0].id && !localStorage.getItem('kb_mig_bandas')) { localStorage.setItem('kb_mig_bandas', 1); if (!S.mats.some(m => m.id === 'bandas' || /banda/i.test(m.n || ''))) { S.mats.push({ id: 'bandas', n: 'Bandas elásticas', on: true, c: 6 }); saveMats(); } } } catch (e) {}
+    render(); };
   let unMats = null; S._subMats = () => { try { unMats && unMats(); } catch (e) {} const path = matsDoc(sedeAct().id); unMats = db.doc(path).onSnapshot(s => { S._matsShared = s.exists ? (s.data().items || []) : []; setMats(); }, err); };
   db.doc('config/sedes').onSnapshot(s => { const prev = S.sedes && sedeAct().id; S.sedes = s.exists ? JSON.parse(JSON.stringify(s.data().lista || [])) : null; if (!S._gIni) { S._gIni = 1; try { const [a, b2] = (localStorage.getItem('kb_grupo') || '').split('|'); if (a) { S.sede = a; S.hor = b2; } } catch (e) {} }
     if (!unMats || prev !== sedeAct().id) S._subMats(); render(); }, err);
