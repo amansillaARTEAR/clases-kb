@@ -664,7 +664,7 @@ function usoReciente() {
   S.clases.forEach((c, i) => (c.ids || []).forEach(id => { if (!(id in m)) m[id] = i; }));
   return m;
 }
-const VENTANA = 4; // no repetir en las últimas 4 clases (2 semanas)
+const VENTANA = 3; // no repetir en las últimas 3 clases
 
 const ELEM = ['bolsa', 'foco', 'paos'];
 const NRM = s => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
