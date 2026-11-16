@@ -659,7 +659,11 @@ const enSede = e => sedesDe(e).includes(sedeAct().id);
 const circuitos = () => (S.banco || []).filter(e => e.est && e.on !== false && enSede(e));
 // ===== 10 x 10: 10" trabajo / 10" descanso, 10 rounds por grupo, 1' entre grupos =====
 const D10G = [['sup', 'fis', 'Tren superior'], ['core', 'core', 'Core'], ['inf', 'fis', 'Tren inferior']];
-function d10Items(g, n) { const [fk, b] = D10G.find(x => x[0] === g); const L = candidatos(b, new Set(), g === 'core' ? null : fk).filter(e => !e.iso).sort(() => Math.random() - .5); return L.slice(0, n).map(e => ({ id: e.id, b, f: null })); }
+// en el 10 x 10 trabajan todos a la vez: solo ejercicios cuyo material alcance para todos
+const d10Gente = () => Math.max(2, S.draft?.alumnos || (S.alumnos || []).filter(a => alEnGrupo(a) && !esProfe(a)).length || 2);
+function d10Items(g, n) { const [fk, b] = D10G.find(x => x[0] === g), N = d10Gente();
+  const L = candidatos(b, new Set(), g === 'core' ? null : fk).filter(e => !e.iso && (e.m || []).every(m => cantMat(m) >= N)).sort(() => Math.random() - .5);
+  const out = []; for (let i = 0; L.length && out.length < n; i++) out.push(L[i % L.length]); return out.map(e => ({ id: e.id, b, f: null })); }
 // los circuitos predefinidos reemplazan a todos los bloques de físico (queda el resto: articular, soga, técnica, etc.)
 function ponerFisico(nuevos) { const B = S.draft.bloques, esF = x => (x.b === 'fis' || x.b === 'core') && x.k !== 'pausa';
   let pos = B.findIndex(esF); if (pos < 0) { pos = B.findIndex(x => x.b === 'calma'); if (pos < 0) pos = B.length; }
