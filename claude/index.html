@@ -583,7 +583,7 @@ setInterval(() => frame(performance.now()), 40);
 /* ================= ESTADO Y DATOS ================= */
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BLOQ = { cal: 'Entrada en calor', tec: 'Técnica', fis: 'Circuito', core: 'Core', calma: 'Vuelta a la calma', pel: 'Competidores' };
+const BLOQ = { cal: 'Entrada en calor', tec: 'Técnica', fis: 'Circuito', core: 'Core', calma: 'Vuelta a la calma', pel: 'Competencia' };
 const PATR = { pel: { situacional: 'Situacional', ritmo: 'Ritmo de pelea', defensa: 'Defensa y contra', clinch: 'Clinch competitivo', reaccion: 'Reacción', sparring: 'Sparring con consigna' }, cal: {cardio:'Cardio / coordinación', movil:'Movilidad'}, tec: {combo:'Combinaciones', golpes:'Golpes', patadas:'Patadas', defensa:'Defensa', clinch:'Clinch', guanteo:'Guanteo'}, fis: {inf:'Tren inferior', emp:'Empuje', trac:'Tracción', pot:'Potencia', cardio:'Cardio / resistencia'}, core: {core:'Core'}, calma: {calma:'Elongación', abertura:'Aberturas'} };
 const SEMANAS = { 1: 'Base', 2: 'Volumen', 3: 'Intensidad', 4: 'Descarga' };
 const S = { pausa: (() => { try { const v = localStorage.getItem('kb_pausa'); return v === null ? 30 : +v; } catch (e) { return 30; } })(), pel: (() => { try { return !!localStorage.getItem('kb_pel'); } catch (e) { return false; } })(), db: null, banco: null, bancoV: null, mats: null, clases: [], tab: 'clase', draft: null, semana: 'auto', dur: 90, enfoque: 'mixto', loaded: { banco: false, mats: false, clases: false } };
@@ -892,7 +892,7 @@ function cambiar(bi, ii) {
   bl.items[ii] = { ...x, b: ib, f: ifk, rounds: it.rounds };
   saveDraftLocal(); render();
 }
-const titulo = bl => (bl.t === 'Bolsa / foco / paos' ? 'Bolsa | Foco & Paos' : bl.t) || BLOQ[bl.b] || '';
+const titulo = bl => (bl.t === 'Bolsa / foco / paos' ? 'Bolsa | Foco & Paos' : bl.t === '🏆 Competidores' ? '🏆 Competencia' : bl.t) || BLOQ[bl.b] || '';
 function cfgEdit(bl, bi) {
   const c = bl.cfg;
   const stp = (k, txt, lab) => `<div class="stp"><small>${lab}</small><div><button data-step="${bi},${k},-1" aria-label="Menos">−</button><span>${txt}</span><button data-step="${bi},${k},1" aria-label="Más">+</button></div></div>`;
@@ -1067,12 +1067,12 @@ function vClase() {
   const d = S.draft;
   if (S.avisoGen) h += `<div class="warn" style="margin:0 0 8px">${S.avisoGen}</div>`;
   { const ya10 = d.bloques.some(b => b.f === 'd10'), cs = circuitos();
-    h += `<div class="card"><b>🧩 Bloques y circuitos predefinidos</b><div class="note" style="padding:2px 0 8px">Competidores se suma a la clase. Los circuitos <b>reemplazan al bloque Circuito</b>.</div><div style="display:flex;flex-direction:column;gap:4px">
+    h += `<div class="card"><b>🧩 Bloques y circuitos predefinidos</b><div class="note" style="padding:2px 0 8px">Competencia se suma a la clase. Los circuitos <b>reemplazan al bloque Circuito</b>.</div><div style="display:flex;flex-direction:column;gap:4px">
       ${(() => { const R = (btn, txt) => `<div style="display:grid;grid-template-columns:118px 1fr;gap:8px;align-items:center">${btn}<small class="mut" style="line-height:1.2;font-size:11.5px">${txt}</small></div>`, ya = d.bloques.some(b => b.b === 'pel'), yaG = d.bloques.some(b => b.g === 'grp');
-        return R(`<button class="btn sm" id="b-addpel" ${ya ? 'disabled' : ''} style="text-align:left;width:100%;padding:4px 8px;font-size:12px;min-height:0;line-height:1.2">🏆 Competidores${ya ? ' ✓' : ''}</button>`, 'Situaciones de pelea. Se suma a la clase.')
+        return R(`<button class="btn sm" id="b-addgrp" ${yaG ? 'disabled' : ''} style="text-align:left;width:100%;padding:4px 8px;font-size:12px;min-height:0;line-height:1.2">💪 Grupos musculares${yaG ? ' ✓' : ''}</button>`, 'Sup., inf. y core: 4 ejercicios de 20" / 5", 3 vueltas.')
         + R(`<button class="btn sm" id="b-add10" ${ya10 ? 'disabled' : ''} style="text-align:left;width:100%;padding:4px 8px;font-size:12px;min-height:0;line-height:1.2">⏱ 10 x 10${ya10 ? ' ✓' : ''}</button>`, '10" trabajo / 10" descanso; 1\' entre grupos.')
-        + R(`<button class="btn sm" id="b-addgrp" ${yaG ? 'disabled' : ''} style="text-align:left;width:100%;padding:4px 8px;font-size:12px;min-height:0;line-height:1.2">💪 Grupos musculares${yaG ? ' ✓' : ''}</button>`, 'Sup., inf. y core: 4 ejercicios de 20" / 5", 3 vueltas.')
-        + cs.map(e => { const y = d.bloques.some(b => b.k === 'circuito' && b.items[0]?.id === e.id); return R(`<button class="btn sm" data-addcirc="${e.id}" ${y ? 'disabled' : ''} style="text-align:left;width:100%;padding:4px 8px;font-size:12px;min-height:0;line-height:1.2">🌴 ${esc(e.n)}${y ? ' ✓' : ''}</button>`, e.id === 'circuito_selvatico' ? 'Estaciones por parejas, con tiempo de cada pareja.' : esc((e.d || '').split('.')[0])); }).join(''); })()}</div></div>`; }
+        + cs.map(e => { const y = d.bloques.some(b => b.k === 'circuito' && b.items[0]?.id === e.id); return R(`<button class="btn sm" data-addcirc="${e.id}" ${y ? 'disabled' : ''} style="text-align:left;width:100%;padding:4px 8px;font-size:12px;min-height:0;line-height:1.2">🌴 ${esc(e.n)}${y ? ' ✓' : ''}</button>`, e.id === 'circuito_selvatico' ? 'Estaciones por parejas, con tiempo de cada pareja.' : esc((e.d || '').split('.')[0])); }).join('')
+        + R(`<button class="btn sm" id="b-addpel" ${ya ? 'disabled' : ''} style="text-align:left;width:100%;padding:4px 8px;font-size:12px;min-height:0;line-height:1.2">🏆 Competencia${ya ? ' ✓' : ''}</button>`, 'Situaciones de pelea. Se suma a la clase.'); })()}</div></div>`; }
   if (d.manual && !d.bloques.some(b => b.items.length)) h += `<div class="note" style="margin:0 0 8px">Tocá <b>Generar clase</b> o armala a mano con <b>+ Agregar ejercicio</b> en cada bloque.</div>`;
   h += `<div class="card"><div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px"><div><b>Clase</b>${FORMATOS[d.formato] ? ' · ' + FORMATOS[d.formato] : d.manual ? ' · Armada a mano' : ''} · Carga ${(CARGAS[d.carga] || 'Normal').toLowerCase()} · ≈ ${d.dur} min<div class="note" style="padding:2px 0 0">${FORM_DESC[d.formato] || ''}</div></div>
     <div class="row" style="align-items:flex-end;gap:8px"><div class="stp"><small>Alumnos</small><div><button data-al="-1" aria-label="Menos">−</button><span>${d.alumnos || 0}</span><button data-al="1" aria-label="Más">+</button></div></div>
@@ -1505,7 +1505,7 @@ $('#main').addEventListener('click', e => {
   if (b.dataset.rm && !b.dataset.sure) { b.dataset.sure = 1; b.textContent = '¿Quitar?'; b.classList.add('pri'); setTimeout(() => { if (b.isConnected) { delete b.dataset.sure; b.textContent = '✕'; b.classList.remove('pri'); } }, 4000); return; }
   if (b.dataset.rm) { const [x, y] = b.dataset.rm.split(',').map(Number); S.draft.bloques[x].items.splice(y, 1); recalcular(); return; }
   if (b.id === 'b-addpel' && S.draft) { const B = S.draft.bloques, ib = B.findIndex(x => x.f === 'elem'), pos = ib < 0 ? B.length : ib, rc = (B.find(x => x.k === 'rounds') || {}).cfg || { w: 180, r: 60 };
-    B.splice(pos, 0, { b: 'pel', t: '🏆 Competidores', k: 'rounds', f: null, cfg: { ...rc }, items: [] }); recalcular(); agregarEj(pos); return; }
+    B.splice(pos, 0, { b: 'pel', t: '🏆 Competencia', k: 'rounds', f: null, cfg: { ...rc }, items: [] }); recalcular(); agregarEj(pos); return; }
   if (b.id === 'b-addgrp' && S.draft) { ponerFisico(bloquesGrupos()); toast('Grupos musculares reemplazó al circuito'); return; }
   if (b.id === 'b-add10' && S.draft) { ponerFisico(bloques10x10()); toast('El 10 x 10 reemplazó al circuito'); return; }
   if (b.dataset.d10 && S.draft) { const bl = S.draft.bloques[+b.dataset.d10], uno = bl.cfg.vueltas !== 1; bl.items = d10Items(bl.g, uno ? 10 : 2); bl.cfg = { ...bl.cfg, vueltas: uno ? 1 : 5 }; recalcular(); return; }
