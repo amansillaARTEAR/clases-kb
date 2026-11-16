@@ -634,7 +634,7 @@ function d10Items(g, n) { const [fk, b] = D10G.find(x => x[0] === g); const L = 
 function ponerFisico(nuevos) { const B = S.draft.bloques, esF = x => (x.b === 'fis' || x.b === 'core') && x.k !== 'pausa';
   let pos = B.findIndex(esF); if (pos < 0) { pos = B.findIndex(x => x.b === 'calma'); if (pos < 0) pos = B.length; }
   const antes = B.slice(0, pos).filter(x => !esF(x)).length; S.draft.bloques = B.filter(x => !esF(x)); S.draft.bloques.splice(antes, 0, ...nuevos); recalcular(); }
-function bloques10x10() { return D10G.map(([g, , t], k) => ({ b: g === 'core' ? 'core' : 'fis', t: '⏱ 10 x 10 · ' + t, k: 'circ', f: 'd10', g, cfg: { w: 10, r: 10, vueltas: 5, rv: 10, ...(k ? { pa: 60 } : {}) }, items: d10Items(g, 2) })); }
+function bloques10x10() { return D10G.map(([g, , t], k) => ({ b: g === 'core' ? 'core' : 'fis', t: '⏱ 10 x 10 · ' + t, k: 'circ', f: 'd10', g, cfg: { w: 10, r: 10, vueltas: 1, rv: 10, ...(k ? { pa: 60 } : {}) }, items: d10Items(g, 10) })); }
 function candidatos(b, excl, fk) {
   const on = matOn(), f = FILT[fk] || (() => true);
   return (S.banco || []).filter(e => e.on !== false && !e.est && e.b === b && enSede(e) && !excl.has(e.id) && !evitado(e) && (e.m || []).every(m => on.has(m)) && f(e));
