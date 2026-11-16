@@ -1300,7 +1300,7 @@ const EX_CODE = [
   { id: 'bolsa_libre', ovv: 100, a: 'bagcombo', b: 'tec', p: 'golpes', nv: 1, on: true, m: ['bolsa'], n: 'Round de bolsa', d: 'Round completo en la bolsa a ritmo de pelea: golpes, patadas, rodillas y desplazamientos.' },
 ];
 // ejercicios sacados desde el código (quedó una sola soga)
-const BORR_CODE = ['soga_trote', 'soga_boxer', 'soga_cruzada', 'soga_lateral', 'soga_rodillas', 'soga_unpie', 'soga_rapida', 'esc_lateral', 'esc_icky', 'esc_unpie', 'esc_inout', 'esc_carioca', 'escalera_sprint', 'escalera_saltos_lat', 'esc_fis'];
+const BORR_CODE = ['soga_trote', 'soga_boxer', 'soga_cruzada', 'soga_lateral', 'soga_rodillas', 'soga_unpie', 'soga_rapida', 'esc_lateral', 'esc_icky', 'esc_unpie', 'esc_inout', 'esc_carioca', 'escalera_sprint', 'escalera_saltos_lat', 'esc_fis', 'dif_venda'];
 function combinarBanco() { if (!S._bm) return;
   // correcciones (ovv): reemplazan al ejercicio guardado solo si son más nuevas que la última edición
   const allEx = [...S._bx, ...(S._aj.items || []), ...S._ex.flatMap(d => d.items || []), ...EX_CODE];
