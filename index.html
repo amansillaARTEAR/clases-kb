@@ -1014,7 +1014,7 @@ function vClase() {
   const sem = semanaAct();
   let h = `<div class="card"><div class="row">
     <div><label>Carga</label><select id="f-carga">${Object.entries(CARGAS).map(([k, v]) => `<option value="${k}" ${(S.carga || 'normal') === k ? 'selected' : ''}>${v}</option>`).join('')}</select></div>
-    <div><label>Pausas</label><select id="f-pausa" title="Descanso entre bloques y entre vueltas">${[0, 15, 30, 45, 60, 90].map(v => `<option value="${v}" ${PAUSA() === v ? 'selected' : ''}>${v ? v + ' seg' : 'Sin pausa'}</option>`).join('')}</select></div>
+    <div><label>Transición</label><select id="f-pausa" title="Tiempo por defecto entre bloques y entre vueltas">${[0, 15, 30, 45, 60, 90].map(v => `<option value="${v}" ${PAUSA() === v ? 'selected' : ''}>${v ? v + ' seg' : 'Sin pausa'}</option>`).join('')}</select></div>
     <button class="btn" id="b-evitar">🩹 Lesiones${nEvitar() ? ` (${nEvitar()})` : ''}</button>
     <label class="pill" title="Agrega un bloque de trabajos específicos para competidores"><input type="checkbox" id="f-pel" ${S.pel ? 'checked' : ''}>🏆 Competidores</label>
     <button class="btn pri" id="b-gen" ${S.banco?.length ? '' : 'disabled'}>Generar clase</button></div>
