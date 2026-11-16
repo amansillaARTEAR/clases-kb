@@ -452,6 +452,22 @@ const PO = {
  KSH:"50,14 50,24 50,54 44,36 40,46 58,32 64,22 49,74 48,94 66,52 62,68",
  HPA:"50,14 50,24 44,54 42,38 45,52 57,38 50,52 46,74 48,94 50,74 52,94",
  HPB:"50,14 50,24 56,54 43,38 50,52 58,38 55,52 50,74 48,94 54,74 52,94",
+ BR1:"48,14 48,24 47,54 58,40 72,46 59,40 73,46 52,74 56,94 42,74 38,94",
+ BR2:"47,14 47,24 47,54 38,44 52,50 39,44 53,50 52,74 56,94 42,74 38,94",
+ PA1:"50,14 50,24 50,54 42,32 46,33 58,32 54,33 46,74 44,94 54,74 56,94",
+ PA2:"50,14 50,24 50,54 36,30 22,30 64,30 78,30 46,74 44,94 54,74 56,94",
+ FP1:"48,14 48,24 47,54 60,26 74,22 61,26 75,22 52,74 56,94 42,74 38,94",
+ FP2:"47,14 47,24 47,54 44,20 56,15 45,20 57,15 52,74 56,94 42,74 38,94",
+ BP1:"50,14 50,24 50,54 38,34 40,22 62,34 60,22 46,74 44,94 54,74 56,94",
+ BP2:"50,10 50,20 50,54 42,8 44,-4 58,8 56,-4 46,74 44,94 54,74 56,94",
+ BS2:"50,34 50,44 50,66 38,52 40,42 62,52 60,42 36,76 42,94 64,76 58,94",
+ LW1:"46,22 46,32 46,58 38,40 40,54 54,40 52,54 42,76 40,94 52,76 54,94",
+ LW2:"50,22 50,32 50,58 42,40 44,54 58,40 56,54 44,76 40,94 58,76 64,94",
+ LW3:"56,22 56,32 56,58 48,40 50,54 64,40 62,54 52,76 50,94 60,76 64,94",
+ PP1:"50,14 50,24 50,54 38,40 49,38 62,40 51,38 46,74 44,94 54,74 56,94",
+ PP2:"50,14 50,24 50,54 45,36 49,46 55,36 51,46 46,74 44,94 54,74 56,94",
+ WB1:"47,15 48,25 50,54 40,20 31,10 45,19 33,9 46,74 44,94 54,74 56,94",
+ WB2:"53,20 52,30 50,58 58,44 66,62 60,42 68,60 42,76 42,94 58,76 58,94",
  HPF:"48,14 49,24 53,55 42,38 45,52 58,38 55,52 51,74 48,94 53,74 52,94",
  HPK:"53,15 52,25 46,54 42,38 45,52 58,38 55,52 47,74 48,94 49,74 52,94",
  LC1:"50,14 50,24 50,54 42,38 45,52 58,38 55,52 49,74 48,94 57,73 65,91",
@@ -503,6 +519,7 @@ const ANIM = {
  teepcross:A('GU TEP GU CRO GU',.38), jabteepkick:A('GU JAB GU TEP GU KIK GU',.36), teepkick:A('GU TEP GU KIK GU',.38), punchknee:A('GU JAB CRO KNE GU',.36), kneeelbow:A('CLN KNE CLN ELB GU',.38),
  kickcross:A('GU KIK GU CRO GU',.38), c1232:A('GU JAB CRO HOK CRO GU',.28), c112:A('GU JAB GU JAB CRO GU',.26), straights:A('JAB CRO',.18), jabbody:A('GU BJ GU JAB GU',.32), lungehold:A('LUB LUB',1.5),
  dragon:A('DFU DFD',1), bridge:A('BRGD BRGU',.8), snatch:A('DLB DLT OVH DLT',.4), slam:A('OVH SQH',.45), pistol:A('PST PSB',.9), pike:A('PKU PKD',.7), sideplank:A('SPL SPL2',1.1),
+ bandrow:A('BR1 BR2',.65,['b_a:95:46']), bandpull:A('PA1 PA2',.6,['b_hands']), bandface:A('FP1 FP2',.6,['b_a:95:20']), bandpush:A('PUU PUD',.6,['b_back']), bandpress:A('BP1 BP2',.6,['b_feet']), bandsquat:A('BP1 BS2',.7,['b_feet']), banddl:A('DLB DLT',.7,['b_feet']), bandwalk:A('LW1 LW2 LW3 LW2',.4,['b_knees']), bandpallof:A('PP1 PP2',.8,['b_a:3:40']), bandchop:A('WB1 WB2',.6,['b_a:3:6']), bandshadow:A('GU JAB GU CRO GU',.3,['b_a:3:40']),
  stretch:A('ST STR STR',1.2), quad:A('QST QST2',1.5), armstretch:A('ARMS ARMS2',1.5), breathe:A('ST ARMB',1.6),
 };
 const ANIM_NAMES = Object.keys(ANIM);
@@ -526,6 +543,14 @@ function propsSvg(pr, q, front) {
       if (x === 'aros') s += `<ellipse cx="50" cy="96" rx="34" ry="5" fill="none" stroke="#4cc9f0" stroke-width="2"/>`;
       if (x === 'cubierta') s += `<rect x="62" y="84" width="36" height="12" rx="6" fill="#2b2b2b" stroke="#555"/>`;
       continue;
+    }
+    if (x.startsWith('b_')) { const G = '#2ecc71', B = (a, b) => L(a, b, G, 1.8);
+      const lf = q[8], rf = q[10], lk = q[7], rk = q[9];
+      if (x === 'b_hands') s += B(lh, rh);
+      if (x === 'b_feet') s += B([lf[0], lf[1] - 1], lh) + B([rf[0], rf[1] - 1], rh);
+      if (x === 'b_back') { const sh = [n[0] - 2, n[1] - 4], bk = [n[0] - 14, n[1] - 1]; s += L(rh, sh, G, 2.4) + L(sh, bk, G, 2.4); }
+      if (x === 'b_knees') s += L([lk[0], lk[1] + 3], [rk[0], rk[1] + 3], G, 2.6);
+      if (x.startsWith('b_a:')) { const [, ax, ay] = x.split(':').map(Number); s += `<line x1="${ax}" y1="-10" x2="${ax}" y2="95" stroke="#555" stroke-width="2"/><circle cx="${ax}" cy="${ay}" r="1.8" fill="${G}"/>` + B([ax, ay], lh) + B([ax, ay], rh); }
     }
     if (x === 'pausa' && q[0][1] > 80) s += `<text x="50" y="30" text-anchor="middle" font-size="16" font-weight="700" fill="#f4a261">⏸ 2"</text>`;
     if (x === 'step') s += `<rect x="4" y="85" width="24" height="10" rx="1.5" fill="#2b2b2b" stroke="#666"/>`;
@@ -552,7 +577,7 @@ function propsSvg(pr, q, front) {
 const MAT2PROP = { barra: 'barra', barra_olimpica: 'barra', discos: 'discos', mancuernas: 'mancuernas', kettlebell: 'kb', balon: 'balon', soga: 'soga', escalera: 'escalera', conos: 'conos', cubierta: 'cubierta', rueda: 'rueda', anillas: 'anillas', paos: 'paos', foco: 'foco', bolsa: 'bolsa' };
 function propsDe(an, mats) {
   if (!mats) return an.pr;
-  return [...an.pr.filter(p => ['rival', 'faceup', 'facedown', 'sogah', 'hulaarm', 'cono1', 'pausa', 'step'].includes(p)), ...mats.filter(m => m !== 'soga' || an.pr.includes('soga')).map(m => m === 'aros' ? (an.pr.includes('arosfila') ? 'arosfila' : an.pr.includes('hula') ? 'hula' : an.pr.includes('aromano') ? 'aromano' : 'aros') : (m === 'anillas' && an.pr.includes('anipiso')) ? 'anipiso' : MAT2PROP[m]).filter(Boolean)];
+  return [...an.pr.filter(p => ['rival', 'faceup', 'facedown', 'sogah', 'hulaarm', 'cono1', 'pausa', 'step'].includes(p) || p.startsWith('b_')), ...mats.filter(m => m !== 'soga' || an.pr.includes('soga')).map(m => m === 'aros' ? (an.pr.includes('arosfila') ? 'arosfila' : an.pr.includes('hula') ? 'hula' : an.pr.includes('aromano') ? 'aromano' : 'aros') : (m === 'anillas' && an.pr.includes('anipiso')) ? 'anipiso' : MAT2PROP[m]).filter(Boolean)];
 }
 function figSvg(key, time, mats, hold) {
   const an0 = ANIM[key] || ANIM.shadow;
@@ -1286,17 +1311,17 @@ const EX_CODE = [
   { id: 'guanteo_libre', ovv: 100, n: 'Guanteo', d: 'Guanteo a ritmo controlado con todas las técnicas.' },
   { id: 'art_cintura', ovv: 100, a: 'hipcirc', n: 'Círculos de cadera', d: 'Manos en la cintura: círculos amplios de cadera hacia un lado y después hacia el otro.' },
   { id: 'art_cadera', ovv: 100, a: 'legcirc', n: 'Círculos de pierna', d: 'Parado en una pierna, levantar la otra estirada y hacer círculos con toda la pierna (flexores de cadera); después cambiar de pierna.' },
-  { id: 'remo_banda', ovv: 100, b: 'fis', p: 'trac', a: 'bentrow', nv: 1, on: true, m: ['bandas'], n: 'Remo con banda elástica', d: 'Pisando la banda, torso inclinado: tirar de los extremos hacia la cadera juntando escápulas.' },
-  { id: 'pullapart_banda', ovv: 100, b: 'fis', p: 'trac', a: 'chestopen', nv: 1, on: true, m: ['bandas'], n: 'Separación de banda (pull-apart)', d: 'Brazos estirados al frente: abrir la banda hasta el pecho juntando escápulas, volver controlado.' },
-  { id: 'facepull_banda', ovv: 100, b: 'fis', p: 'trac', a: 'row', nv: 1, on: true, m: ['bandas'], n: 'Face pull con banda', d: 'Banda atada adelante a la altura de la cara: tirar hacia la frente abriendo codos.' },
-  { id: 'flex_banda', ovv: 100, b: 'fis', p: 'emp', a: 'pushup', nv: 2, on: true, m: ['bandas'], n: 'Flexiones con banda', d: 'Banda pasada por la espalda y sujeta con las manos: flexiones contra la resistencia.' },
-  { id: 'press_hombro_banda', ovv: 100, b: 'fis', p: 'emp', a: 'press', nv: 1, on: true, m: ['bandas'], n: 'Press de hombros con banda', d: 'Pisando la banda: empujar los extremos por encima de la cabeza.' },
-  { id: 'sentadilla_banda', ovv: 100, b: 'fis', p: 'inf', a: 'squat', nv: 1, on: true, m: ['bandas'], n: 'Sentadilla con banda', d: 'Pisando la banda y con los extremos a la altura de los hombros: sentadilla completa.' },
-  { id: 'peso_muerto_banda', ovv: 100, b: 'fis', p: 'inf', a: 'deadlift', nv: 1, on: true, m: ['bandas'], n: 'Peso muerto con banda', d: 'Pisando la banda: bisagra de cadera con espalda recta y subir apretando glúteos.' },
-  { id: 'caminata_lat_banda', ovv: 100, b: 'fis', p: 'inf', a: 'shuffle', nv: 1, on: true, m: ['bandas'], n: 'Caminata lateral con banda (glúteo)', d: 'Banda sobre las rodillas o tobillos, semiflexionado: pasos laterales sin juntar los pies.' },
-  { id: 'pallof_banda', ovv: 100, b: 'core', p: 'core', a: 'torsorot', nv: 1, on: true, m: ['bandas'], sg: 'rotacion', n: 'Press Pallof con banda', d: 'Banda atada al costado: empujar al frente y sostener sin dejar que el tronco gire.' },
-  { id: 'lenador_banda', ovv: 100, b: 'core', p: 'core', a: 'woodchop', nv: 1, on: true, m: ['bandas'], sg: 'rotacion', n: 'Leñador con banda', d: 'Banda atada arriba al costado: tirar en diagonal hacia la rodilla contraria girando el tronco.' },
-  { id: 'sombra_banda', ovv: 100, b: 'tec', p: 'golpes', a: 'focus12', nv: 1, on: true, m: ['bandas'], n: 'Sombra con banda elástica', d: 'Banda atada atrás y a la cintura (o en las manos): golpes rectos contra la resistencia.' },
+  { id: 'remo_banda', ovv: 100, b: 'fis', p: 'trac', a: 'bandrow', nv: 1, on: true, m: ['bandas'], n: 'Remo con banda elástica', d: 'Banda atada adelante a la altura del pecho: tirar hacia la cintura llevando los codos atrás y juntando escápulas.' },
+  { id: 'pullapart_banda', ovv: 100, b: 'fis', p: 'trac', a: 'bandpull', nv: 1, on: true, m: ['bandas'], n: 'Separación de banda (pull-apart)', d: 'Brazos estirados al frente: abrir la banda hasta el pecho juntando escápulas, volver controlado.' },
+  { id: 'facepull_banda', ovv: 100, b: 'fis', p: 'trac', a: 'bandface', nv: 1, on: true, m: ['bandas'], n: 'Face pull con banda', d: 'Banda atada adelante a la altura de la cara: tirar hacia la frente abriendo codos.' },
+  { id: 'flex_banda', ovv: 100, b: 'fis', p: 'emp', a: 'bandpush', nv: 2, on: true, m: ['bandas'], n: 'Flexiones con banda', d: 'Banda pasada por la espalda y sujeta con las manos: flexiones contra la resistencia.' },
+  { id: 'press_hombro_banda', ovv: 100, b: 'fis', p: 'emp', a: 'bandpress', nv: 1, on: true, m: ['bandas'], n: 'Press de hombros con banda', d: 'Pisando la banda: empujar los extremos por encima de la cabeza.' },
+  { id: 'sentadilla_banda', ovv: 100, b: 'fis', p: 'inf', a: 'bandsquat', nv: 1, on: true, m: ['bandas'], n: 'Sentadilla con banda', d: 'Pisando la banda y con los extremos a la altura de los hombros: sentadilla completa.' },
+  { id: 'peso_muerto_banda', ovv: 100, b: 'fis', p: 'inf', a: 'banddl', nv: 1, on: true, m: ['bandas'], n: 'Peso muerto con banda', d: 'Pisando la banda: bisagra de cadera con espalda recta y subir apretando glúteos.' },
+  { id: 'caminata_lat_banda', ovv: 100, b: 'fis', p: 'inf', a: 'bandwalk', nv: 1, on: true, m: ['bandas'], n: 'Caminata lateral con banda (glúteo)', d: 'Banda sobre las rodillas, semiflexionado: pasos laterales sin juntar los pies.' },
+  { id: 'pallof_banda', ovv: 100, b: 'core', p: 'core', a: 'bandpallof', nv: 1, on: true, m: ['bandas'], sg: 'rotacion', n: 'Press Pallof con banda', d: 'Banda atada al costado: empujar al frente y sostener sin dejar que el tronco gire.' },
+  { id: 'lenador_banda', ovv: 100, b: 'core', p: 'core', a: 'bandchop', nv: 1, on: true, m: ['bandas'], sg: 'rotacion', n: 'Leñador con banda', d: 'Banda atada arriba al costado: tirar en diagonal hacia la rodilla contraria girando el tronco.' },
+  { id: 'sombra_banda', ovv: 100, b: 'tec', p: 'golpes', a: 'bandshadow', nv: 1, on: true, m: ['bandas'], n: 'Sombra con banda elástica', d: 'Banda atada atrás a la altura del pecho, un extremo en cada mano: golpes rectos contra la resistencia.' },
   { id: 'foco_libre', ovv: 100, a: 'focus12', b: 'tec', p: 'golpes', nv: 1, on: true, m: ['foco'], n: 'Round de foco', d: 'Round completo con foco: el compañero marca y el alumno responde con golpes y combinaciones libres.' },
   { id: 'paos_libre', ovv: 100, a: 'kickcross', b: 'tec', p: 'combo', nv: 1, on: true, m: ['paos'], n: 'Round de paos', d: 'Round completo con paos: golpes, patadas, rodillas y codos a ritmo de pelea.' },
   { id: 'bolsa_libre', ovv: 100, a: 'bagcombo', b: 'tec', p: 'golpes', nv: 1, on: true, m: ['bolsa'], n: 'Round de bolsa', d: 'Round completo en la bolsa a ritmo de pelea: golpes, patadas, rodillas y desplazamientos.' },
