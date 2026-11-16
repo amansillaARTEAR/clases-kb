@@ -888,7 +888,7 @@ function resumenMes(mesK) {
   const [y, m] = mesK.split('-').map(Number), nom = (t => t[0].toUpperCase() + t.slice(1))(new Date(y, m - 1, 1).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' }));
   const asis = (S.alumnos || []).map(a => [a, ca.filter(c => c.presentes.includes(a)).length]).sort((p, q) => q[1] - p[1]);
   const prom = ca.length ? (ca.reduce((t, c) => t + c.presentes.length, 0) / ca.length).toFixed(1) : '—';
-  const cnt = {}; cs.forEach(c => (c.ids || []).forEach(id => { const e = exById(id); if (e && ['fis', 'core', 'tec', 'pel'].includes(e.b) && !/guanteo|bolsa_libre/.test(id)) cnt[id] = (cnt[id] || 0) + 1; }));
+  const cnt = {}; cs.forEach(c => (c.ids || []).forEach(id => { const e = exById(id); if (e && ['fis', 'core', 'tec', 'pel'].includes(e.b) && !/guanteo|_libre/.test(id)) cnt[id] = (cnt[id] || 0) + 1; }));
   const top = Object.entries(cnt).sort((p, q) => q[1] - p[1]).slice(0, 5).map(([id, n]) => `${exById(id)?.n || id} (${n})`);
   const sens = Object.keys(SENS).map(k => [k, cs.filter(c => c.sens === k).length]).filter(x => x[1]);
   const txt = [`📊 *Resumen de ${nom}*${S.alTodos ? '' : ' · ' + grupoTxt(sedeAct(), horAct())}`, '', `🥊 Clases: ${cs.length}`, `👥 Promedio de alumnos: ${prom}`, '',
@@ -1248,7 +1248,9 @@ S._bm = null; S._bx = []; S._borr = []; S._aj = { items: [], borrados: [] }; S._
 const EX_CODE = [
   { id: 'sombra_tecnica', ovv: 100, n: 'Sombra' },
   { id: 'guanteo_libre', ovv: 100, n: 'Guanteo', d: 'Guanteo a ritmo controlado con todas las técnicas.' },
-  { id: 'bolsa_libre', ovv: 100, n: 'Round de bolsa', d: 'Round completo en la bolsa a ritmo de pelea: golpes, patadas, rodillas y desplazamientos.' },
+  { id: 'foco_libre', ovv: 100, a: 'focus12', b: 'tec', p: 'golpes', nv: 1, on: true, m: ['foco'], n: 'Round de foco', d: 'Round completo con foco: el compañero marca y el alumno responde con golpes y combinaciones libres.' },
+  { id: 'paos_libre', ovv: 100, a: 'kickcross', b: 'tec', p: 'combo', nv: 1, on: true, m: ['paos'], n: 'Round de paos', d: 'Round completo con paos: golpes, patadas, rodillas y codos a ritmo de pelea.' },
+  { id: 'bolsa_libre', ovv: 100, a: 'bagcombo', b: 'tec', p: 'golpes', nv: 1, on: true, m: ['bolsa'], n: 'Round de bolsa', d: 'Round completo en la bolsa a ritmo de pelea: golpes, patadas, rodillas y desplazamientos.' },
 ];
 function combinarBanco() { if (!S._bm) return;
   // correcciones (ovv): reemplazan al ejercicio guardado solo si son más nuevas que la última edición
