@@ -1360,11 +1360,21 @@ function borrarEj(id) {
 const saveBanco = () => S.db && serial(() => S.db.doc('banco/ejercicios').set({ items: S.banco, borrados: S._borr }));
 const saveMats = () => S.db && serial(() => S.db.doc(S.priv ? P_('materiales') : matsDoc(sedeAct().id)).set({ items: S.mats }));
 // guardar sin marcarla como dada: queda en "Próximas clases planificadas"
-async function guardarPlan() {
+function proxFechas(n = 6) { const h = horAct(), [hh, mi] = (h.hora || '20:00').split(':').map(Number), ds = h.dias && h.dias.length ? h.dias : [2, 4], now = new Date(), out = [];
+  for (let i = 0; out.length < n && i < 60; i++) { const x = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i, hh || 0, mi || 0); if (ds.includes(x.getDay()) && x.getTime() + 2 * 3600e3 > now.getTime()) out.push(x); } return out; }
+function elegirFechaPlan() { const d = S.draft; if (!d.bloques.some(b => b.items.length)) { toast('Agregá al menos un ejercicio.'); return; }
+  const fs = proxFechas(), act = d._plan && d.fecha ? new Date(d.fecha).toDateString() : '';
+  const ya = f => (S.plan || []).some(p => p._id !== d._plan && enGrupo(p) && new Date(p.fecha).toDateString() === f.toDateString());
+  const m = modal(`<h3 style="margin-top:0">¿Para qué clase es?</h3><div class="note" style="padding-top:0">${esc(grupoTxt(sedeAct(), horAct()))}</div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin:8px 0">${fs.map((f, i) => `<button class="btn${f.toDateString() === act ? ' pri' : ''}" data-fp="${i}" style="justify-content:space-between;display:flex;text-align:left"><span style="text-transform:capitalize">${f.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'numeric' })} · ${f.toTimeString().slice(0, 5)}</span>${ya(f) ? '<small class="mut">ya hay una planificada</small>' : ''}</button>`).join('')}</div>
+    <div class="row" style="justify-content:flex-end"><button class="btn" id="fp-x">Cancelar</button></div>`);
+  m.querySelector('#fp-x').onclick = () => m.remove();
+  m.querySelectorAll('[data-fp]').forEach(b => b.onclick = () => { m.remove(); guardarPlan(fs[+b.dataset.fp].toISOString()); }); }
+async function guardarPlan(fecha) {
   if (!S.db) { toast('Sin conexión a la base.'); return; }
   const d = S.draft; if (!d.bloques.some(b => b.items.length)) { toast('Agregá al menos un ejercicio.'); return; }
   if (!d.sede) { d.sede = sedeAct().id; d.hor = horAct().id; }
-  const hoy = new Date(); hoy.setHours(0, 0, 0, 0); if (!d.fecha || new Date(d.fecha) < hoy) d.fecha = fechaClase();
+  const hoy = new Date(); hoy.setHours(0, 0, 0, 0); if (fecha) d.fecha = fecha; else if (!d.fecha || new Date(d.fecha) < hoy) d.fecha = fechaClase();
   const id = d._plan || ('p' + String(d.fecha).slice(0, 10).replace(/-/g, '') + '_' + d.sede + '_' + d.hor + '_' + Date.now().toString(36));
   const { _saved, _id, _plan, tiempos, ...rest } = d;
   await serial(() => S.db.doc('plan/' + id).set(JSON.parse(JSON.stringify(rest))));
@@ -1475,7 +1485,7 @@ $('#main').addEventListener('click', e => {
   if (b.id === 'b-gen') generar();
   if (b.id === 'b-evitar') editarEvitar();
   if (b.id === 'b-save') guardarClase();
-  if (b.id === 'b-gplan') guardarPlan();
+  if (b.id === 'b-gplan') elegirFechaPlan();
   if (b.id === 'b-live') { const ci = S.draft.bloques.findIndex(x => x.k === 'circuito' && !x.parejas?.length); if (ci >= 0) { toast('Primero armá las parejas del circuito.'); editarParejas(ci); return; } }
   if (b.id === 'b-live') abrirLive(timeline(S.draft),  'Clase', `${FORMATOS[S.draft.formato] || ''} · Carga ${(CARGAS[S.draft.carga] || 'Normal').toLowerCase()}`, true);
   if (b.id === 'tc-go') { const w = toS($('#tc-w').value), r = toS($('#tc-r').value), R = Math.max(1, +$('#tc-R').value || 1), p = Math.max(0, +$('#tc-p').value || 0); if (!w) { toast('Revisá el tiempo de trabajo (m:ss).'); return; } TC = { w, r: r || 0, R, p, combo: $('#tc-c').value || '' }; try { localStorage.setItem('kb_timer', JSON.stringify(TC)); } catch (e) {} iniciarTimer('Personalizado', w, r || 0, R, p); }
