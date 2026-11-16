@@ -452,6 +452,8 @@ const PO = {
  KSH:"50,14 50,24 50,54 44,36 40,46 58,32 64,22 49,74 48,94 66,52 62,68",
  HPA:"50,14 50,24 44,54 42,38 45,52 57,38 50,52 46,74 48,94 50,74 52,94",
  HPB:"50,14 50,24 56,54 43,38 50,52 58,38 55,52 50,74 48,94 54,74 52,94",
+ HS1:"54,79 48,70 58,40 46,82 45,94 51,82 51,94 63,24 66,8 64,24 67,8",
+ HS2:"54,79 48,70 59,40 46,82 45,94 51,82 51,94 64,24 66,8 65,24 67,8",
  BR1:"48,14 48,24 47,54 58,40 72,46 59,40 73,46 52,74 56,94 42,74 38,94",
  BR2:"47,14 47,24 47,54 38,44 52,50 39,44 53,50 52,74 56,94 42,74 38,94",
  PA1:"50,14 50,24 50,54 42,32 46,33 58,32 54,33 46,74 44,94 54,74 56,94",
@@ -520,7 +522,7 @@ const ANIM = {
  kickcross:A('GU KIK GU CRO GU',.38), c1232:A('GU JAB CRO HOK CRO GU',.28), c112:A('GU JAB GU JAB CRO GU',.26), straights:A('JAB CRO',.18), jabbody:A('GU BJ GU JAB GU',.32), lungehold:A('LUB LUB',1.5),
  dragon:A('DFU DFD',1), bridge:A('BRGD BRGU',.8), snatch:A('DLB DLT OVH DLT',.4), slam:A('OVH SQH',.45), pistol:A('PST PSB',.9), pike:A('PKU PKD',.7), sideplank:A('SPL SPL2',1.1),
  bandrow:A('BR1 BR2',.65,['b_a:95:46']), bandpull:A('PA1 PA2',.6,['b_hands']), bandface:A('FP1 FP2',.6,['b_a:95:20']), bandpush:A('PUU PUD',.6,['b_back']), bandpress:A('BP1 BP2',.6,['b_feet']), bandsquat:A('BP1 BS2',.7,['b_feet']), banddl:A('DLB DLT',.7,['b_feet']), bandwalk:A('LW1 LW2 LW3 LW2',.4,['b_knees']), bandpallof:A('PP1 PP2',.8,['b_a:3:40']), bandchop:A('WB1 WB2',.6,['b_a:3:6']), bandshadow:A('GU JAB GU CRO GU',.3,['b_a:3:40']),
- bagmix:A('GU JAB GU CRO GU PUU PUD PUU GU JAB GU CRO GU SUD SUU SUD GU JAB GU CRO GU SQT SQB SQT',.3,['bolsa']), escback:A('QF1 QF2 QF1 QF2 LT1 LT2 LT3 LT2',.2,['escalera']), escpunch:A('QF1 QF2 QF1 QF2 GU JAB GU CRO GU',.2,['escalera']),
+ bagmix:A('GU JAB GU CRO GU PUU PUD PUU GU JAB GU CRO GU SUD SUU SUD GU JAB GU CRO GU SQT SQB SQT',.3,['bolsa']), wallhs:A('HS1 HS2',1,['pared']), escback:A('QF1 QF2 QF1 QF2 LT1 LT2 LT3 LT2',.2,['escalera']), escpunch:A('QF1 QF2 QF1 QF2 GU JAB GU CRO GU',.2,['escalera']),
  stretch:A('ST STR STR',1.2), quad:A('QST QST2',1.5), armstretch:A('ARMS ARMS2',1.5), breathe:A('ST ARMB',1.6),
 };
 const ANIM_NAMES = Object.keys(ANIM);
@@ -553,6 +555,7 @@ function propsSvg(pr, q, front) {
       if (x === 'b_knees') s += L([lk[0], lk[1] + 3], [rk[0], rk[1] + 3], G, 2.6);
       if (x.startsWith('b_a:')) { const [, ax, ay] = x.split(':').map(Number); s += `<line x1="${ax}" y1="-10" x2="${ax}" y2="95" stroke="#555" stroke-width="2"/><circle cx="${ax}" cy="${ay}" r="1.8" fill="${G}"/>` + B([ax, ay], lh) + B([ax, ay], rh); }
     }
+    if (x === 'pared') s += `<rect x="69" y="-12" width="6" height="107" fill="#3a3a42"/>`;
     if (x === 'pausa' && q[0][1] > 80) s += `<text x="50" y="30" text-anchor="middle" font-size="16" font-weight="700" fill="#f4a261">⏸ 2"</text>`;
     if (x === 'step') s += `<rect x="4" y="85" width="24" height="10" rx="1.5" fill="#2b2b2b" stroke="#666"/>`;
     if (x === 'anipiso') s += [lh, rh].map(c => `<line x1="${c[0]}" y1="-12" x2="${c[0]}" y2="${c[1]-3}" stroke="#777" stroke-width="1"/><circle cx="${c[0]}" cy="${c[1]+1}" r="3" fill="none" stroke="#c9a227" stroke-width="1.5"/>`).join('');
@@ -578,7 +581,7 @@ function propsSvg(pr, q, front) {
 const MAT2PROP = { barra: 'barra', barra_olimpica: 'barra', discos: 'discos', mancuernas: 'mancuernas', kettlebell: 'kb', balon: 'balon', soga: 'soga', escalera: 'escalera', conos: 'conos', cubierta: 'cubierta', rueda: 'rueda', anillas: 'anillas', paos: 'paos', foco: 'foco', bolsa: 'bolsa' };
 function propsDe(an, mats) {
   if (!mats) return an.pr;
-  return [...an.pr.filter(p => ['rival', 'faceup', 'facedown', 'sogah', 'hulaarm', 'cono1', 'pausa', 'step'].includes(p) || p.startsWith('b_')), ...mats.filter(m => m !== 'soga' || an.pr.includes('soga')).map(m => m === 'aros' ? (an.pr.includes('arosfila') ? 'arosfila' : an.pr.includes('hula') ? 'hula' : an.pr.includes('aromano') ? 'aromano' : 'aros') : (m === 'anillas' && an.pr.includes('anipiso')) ? 'anipiso' : MAT2PROP[m]).filter(Boolean)];
+  return [...an.pr.filter(p => ['rival', 'faceup', 'facedown', 'sogah', 'hulaarm', 'cono1', 'pausa', 'step', 'pared'].includes(p) || p.startsWith('b_')), ...mats.filter(m => m !== 'soga' || an.pr.includes('soga')).map(m => m === 'aros' ? (an.pr.includes('arosfila') ? 'arosfila' : an.pr.includes('hula') ? 'hula' : an.pr.includes('aromano') ? 'aromano' : 'aros') : (m === 'anillas' && an.pr.includes('anipiso')) ? 'anipiso' : MAT2PROP[m]).filter(Boolean)];
 }
 function figSvg(key, time, mats, hold) {
   const an0 = ANIM[key] || ANIM.shadow;
@@ -1365,6 +1368,7 @@ const EX_CODE = [
   { id: 'lenador_banda', ovv: 100, b: 'core', p: 'core', a: 'bandchop', nv: 1, on: true, m: ['bandas'], sg: 'rotacion', n: 'Leñador con banda', d: 'Banda atada arriba al costado: tirar en diagonal hacia la rodilla contraria girando el tronco.' },
   { id: 'sombra_banda', ovv: 100, b: 'fis', p: 'cardio', a: 'bandshadow', nv: 1, on: true, m: ['bandas'], n: 'Sombra con banda elástica', d: 'Banda atada atrás a la altura del pecho, un extremo en cada mano: golpes rectos contra la resistencia.' },
   { id: 'bolsa_intercalada', ovv: 100, b: 'tec', p: 'combo', a: 'bagmix', nv: 2, on: true, m: ['bolsa'], n: 'Bolsa con ejercicios intercalados', d: 'Trabajo de bolsa y, a la señal, cortar 15 segundos con un ejercicio: flexiones, volver a la bolsa, abdominales, bolsa, sentadillas, etc. La voz avisa cada cambio.' },
+  { id: 'vertical_pared', ovv: 100, b: 'fis', p: 'emp', sg: 'hombros', a: 'wallhs', nv: 2, on: true, iso: true, hp: 0, m: [], n: 'Vertical isométrica contra la pared', d: 'Manos en el piso y pies apoyados en la pared, cuerpo recto y brazos firmes; sostener.', z: ['hombros', 'munecas'] },
   { id: 'foco_libre', ovv: 100, a: 'focus12', b: 'tec', p: 'golpes', nv: 1, on: true, m: ['foco'], n: 'Round de foco', d: 'Round completo con foco: el compañero marca y el alumno responde con golpes y combinaciones libres.' },
   { id: 'paos_libre', ovv: 100, a: 'kickcross', b: 'tec', p: 'combo', nv: 1, on: true, m: ['paos'], n: 'Round de paos', d: 'Round completo con paos: golpes, patadas, rodillas y codos a ritmo de pelea.' },
   { id: 'bolsa_libre', ovv: 100, a: 'bagcombo', b: 'tec', p: 'golpes', nv: 1, on: true, m: ['bolsa'], n: 'Round de bolsa', d: 'Round completo en la bolsa a ritmo de pelea: golpes, patadas, rodillas y desplazamientos.' },
