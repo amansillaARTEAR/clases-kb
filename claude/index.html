@@ -641,7 +641,7 @@ function ponerFisico(nuevos) { const B = S.draft.bloques, esF = x => (x.b === 'f
 function bloques10x10() { return D10G.map(([g, , t], k) => ({ b: g === 'core' ? 'core' : 'fis', t: '⏱ 10 x 10 · ' + t, k: 'circ', f: 'd10', g, cfg: { w: 10, r: 10, vueltas: 1, rv: 10, ...(k ? { pa: 60 } : {}) }, items: d10Items(g, 10) })); }
 // estiramientos ordenados por zona del cuerpo, de la cabeza a los pies
 const ZCUERPO = [/cuello|cabeza/, /hombro|tricep|brazo|antebrazo|muneca|pecho|dorsal/, /espalda|columna|torsion|cobra|abdomin|nino/, /lumbar|cadera|gluteo|mariposa|aductor/, /abertura|isquio|cuadricep|pierna/, /pantorrilla|tobillo|gemelo/];
-const zonaCuerpo = e => { const t = NRM(e.n + ' ' + (e.d || '')), n = NRM(e.n); if (/general|respiracion/.test(n)) return -1; let i = ZCUERPO.findIndex(r => r.test(n)); if (i < 0) i = ZCUERPO.findIndex(r => r.test(t)); return i < 0 ? 99 : i; };
+const zonaCuerpo = e => { const t = NRM(e.n + ' ' + (e.d || '')), n = NRM(e.n); if (/general|respiracion/.test(n)) return -1; if (/lumbar/.test(n)) return 3; let i = ZCUERPO.findIndex(r => r.test(n)); if (i < 0) i = ZCUERPO.findIndex(r => r.test(t)); return i < 0 ? 99 : i; };
 const ordCuerpo = (x, y) => zonaCuerpo(x) - zonaCuerpo(y) || x.n.localeCompare(y.n, 'es');
 function candidatos(b, excl, fk) {
   const on = matOn(), f = FILT[fk] || (() => true);
