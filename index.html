@@ -1309,6 +1309,7 @@ S._bm = null; S._bx = []; S._borr = []; S._aj = { items: [], borrados: [] }; S._
 const EX_CODE = [
   { id: 'sombra_tecnica', ovv: 100, n: 'Sombra' },
   { id: 'guanteo_libre', ovv: 100, n: 'Guanteo', d: 'Guanteo a ritmo controlado con todas las técnicas.' },
+  { id: 'soga_basico', ovv: 100, n: 'Soga', d: 'Trabajo libre de soga variando: salto básico, boxer step, trote, rodillas arriba, saltos laterales, a un pie, cruces y dobles.' },
   { id: 'art_cintura', ovv: 100, a: 'hipcirc', n: 'Círculos de cadera', d: 'Manos en la cintura: círculos amplios de cadera hacia un lado y después hacia el otro.' },
   { id: 'art_cadera', ovv: 100, a: 'legcirc', n: 'Círculos de pierna', d: 'Parado en una pierna, levantar la otra estirada y hacer círculos con toda la pierna (flexores de cadera); después cambiar de pierna.' },
   { id: 'remo_banda', ovv: 100, b: 'fis', p: 'trac', a: 'bandrow', nv: 1, on: true, m: ['bandas'], n: 'Remo con banda elástica', d: 'Banda atada adelante a la altura del pecho: tirar hacia la cintura llevando los codos atrás y juntando escápulas.' },
@@ -1326,13 +1327,15 @@ const EX_CODE = [
   { id: 'paos_libre', ovv: 100, a: 'kickcross', b: 'tec', p: 'combo', nv: 1, on: true, m: ['paos'], n: 'Round de paos', d: 'Round completo con paos: golpes, patadas, rodillas y codos a ritmo de pelea.' },
   { id: 'bolsa_libre', ovv: 100, a: 'bagcombo', b: 'tec', p: 'golpes', nv: 1, on: true, m: ['bolsa'], n: 'Round de bolsa', d: 'Round completo en la bolsa a ritmo de pelea: golpes, patadas, rodillas y desplazamientos.' },
 ];
+// ejercicios sacados desde el código (quedó una sola soga)
+const BORR_CODE = ['soga_trote', 'soga_boxer', 'soga_cruzada', 'soga_lateral', 'soga_rodillas', 'soga_unpie', 'soga_rapida'];
 function combinarBanco() { if (!S._bm) return;
   // correcciones (ovv): reemplazan al ejercicio guardado solo si son más nuevas que la última edición
   const allEx = [...S._bx, ...(S._aj.items || []), ...S._ex.flatMap(d => d.items || []), ...EX_CODE];
   const ovs = allEx.filter(e => e.ovv), plain = allEx.filter(e => !e.ovv && e.n);
   const ids0 = new Set(S._bm.map(e => e.id)); const base = [...S._bm, ...plain.filter((e, i, a) => !ids0.has(e.id) && !S._borr.includes(e.id) && a.findIndex(x => x.id === e.id) === i)];
   ovs.forEach(o => { const i = base.findIndex(e => e.id === o.id); if (i >= 0) { if (o.ovv > (base[i].ovv || 0)) base[i] = { ...base[i], ...o }; } else if (o.n && !S._borr.includes(o.id)) base.push(o); });
-  const main = base, ex = []; const bo = [...(S._aj.borrados || []), ...S._ex.flatMap(d => d.borrados || [])]; S.banco = [...main, ...ex].filter(e => !bo.includes(e.id)).map(x => ({ ...x })); aplicarPerfil(); }
+  const main = base, ex = []; const bo = [...(S._aj.borrados || []), ...S._ex.flatMap(d => d.borrados || [])]; S.banco = [...main, ...ex].filter(e => !bo.includes(e.id) && !BORR_CODE.includes(e.id)).map(x => ({ ...x })); aplicarPerfil(); }
 // perfiles: el dueño usa los datos generales; cada colaborador tiene su copia privada
 S.priv = false; S.uid = null; S._um = { mods: {}, borrados: [] }; S._matsShared = null; S._matsUser = null;
 const P_ = k => 'data/users/' + S.uid + '/' + k;
