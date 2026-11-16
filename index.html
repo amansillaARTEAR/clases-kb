@@ -520,7 +520,7 @@ const ANIM = {
  kickcross:A('GU KIK GU CRO GU',.38), c1232:A('GU JAB CRO HOK CRO GU',.28), c112:A('GU JAB GU JAB CRO GU',.26), straights:A('JAB CRO',.18), jabbody:A('GU BJ GU JAB GU',.32), lungehold:A('LUB LUB',1.5),
  dragon:A('DFU DFD',1), bridge:A('BRGD BRGU',.8), snatch:A('DLB DLT OVH DLT',.4), slam:A('OVH SQH',.45), pistol:A('PST PSB',.9), pike:A('PKU PKD',.7), sideplank:A('SPL SPL2',1.1),
  bandrow:A('BR1 BR2',.65,['b_a:95:46']), bandpull:A('PA1 PA2',.6,['b_hands']), bandface:A('FP1 FP2',.6,['b_a:95:20']), bandpush:A('PUU PUD',.6,['b_back']), bandpress:A('BP1 BP2',.6,['b_feet']), bandsquat:A('BP1 BS2',.7,['b_feet']), banddl:A('DLB DLT',.7,['b_feet']), bandwalk:A('LW1 LW2 LW3 LW2',.4,['b_knees']), bandpallof:A('PP1 PP2',.8,['b_a:3:40']), bandchop:A('WB1 WB2',.6,['b_a:3:6']), bandshadow:A('GU JAB GU CRO GU',.3,['b_a:3:40']),
- escback:A('QF1 QF2 QF1 QF2 LT1 LT2 LT3 LT2',.2,['escalera']), escpunch:A('QF1 QF2 QF1 QF2 GU JAB GU CRO GU',.2,['escalera']),
+ bagmix:A('GU JAB GU CRO GU PUU PUD PUU GU JAB GU CRO GU SUD SUU SUD GU JAB GU CRO GU SQT SQB SQT',.3,['bolsa']), escback:A('QF1 QF2 QF1 QF2 LT1 LT2 LT3 LT2',.2,['escalera']), escpunch:A('QF1 QF2 QF1 QF2 GU JAB GU CRO GU',.2,['escalera']),
  stretch:A('ST STR STR',1.2), quad:A('QST QST2',1.5), armstretch:A('ARMS ARMS2',1.5), breathe:A('ST ARMB',1.6),
 };
 const ANIM_NAMES = Object.keys(ANIM);
@@ -1328,6 +1328,7 @@ const EX_CODE = [
   { id: 'pallof_banda', ovv: 100, b: 'core', p: 'core', a: 'bandpallof', nv: 1, on: true, m: ['bandas'], sg: 'rotacion', n: 'Press Pallof con banda', d: 'Banda atada al costado: empujar al frente y sostener sin dejar que el tronco gire.' },
   { id: 'lenador_banda', ovv: 100, b: 'core', p: 'core', a: 'bandchop', nv: 1, on: true, m: ['bandas'], sg: 'rotacion', n: 'Leñador con banda', d: 'Banda atada arriba al costado: tirar en diagonal hacia la rodilla contraria girando el tronco.' },
   { id: 'sombra_banda', ovv: 100, b: 'tec', p: 'golpes', a: 'bandshadow', nv: 1, on: true, m: ['bandas'], n: 'Sombra con banda elástica', d: 'Banda atada atrás a la altura del pecho, un extremo en cada mano: golpes rectos contra la resistencia.' },
+  { id: 'bolsa_intercalada', ovv: 100, b: 'tec', p: 'combo', a: 'bagmix', nv: 2, on: true, m: ['bolsa'], n: 'Bolsa con ejercicios intercalados', d: 'Trabajo de bolsa y, a la señal, cortar con un ejercicio físico: flexiones, volver a la bolsa, abdominales, bolsa, sentadillas, etc.' },
   { id: 'foco_libre', ovv: 100, a: 'focus12', b: 'tec', p: 'golpes', nv: 1, on: true, m: ['foco'], n: 'Round de foco', d: 'Round completo con foco: el compañero marca y el alumno responde con golpes y combinaciones libres.' },
   { id: 'paos_libre', ovv: 100, a: 'kickcross', b: 'tec', p: 'combo', nv: 1, on: true, m: ['paos'], n: 'Round de paos', d: 'Round completo con paos: golpes, patadas, rodillas y codos a ritmo de pelea.' },
   { id: 'bolsa_libre', ovv: 100, a: 'bagcombo', b: 'tec', p: 'golpes', nv: 1, on: true, m: ['bolsa'], n: 'Round de bolsa', d: 'Round completo en la bolsa a ritmo de pelea: golpes, patadas, rodillas y desplazamientos.' },
