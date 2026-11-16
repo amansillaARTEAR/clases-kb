@@ -1328,7 +1328,7 @@ const EX_CODE = [
   { id: 'pallof_banda', ovv: 100, b: 'core', p: 'core', a: 'bandpallof', nv: 1, on: true, m: ['bandas'], sg: 'rotacion', n: 'Press Pallof con banda', d: 'Banda atada al costado: empujar al frente y sostener sin dejar que el tronco gire.' },
   { id: 'lenador_banda', ovv: 100, b: 'core', p: 'core', a: 'bandchop', nv: 1, on: true, m: ['bandas'], sg: 'rotacion', n: 'Leñador con banda', d: 'Banda atada arriba al costado: tirar en diagonal hacia la rodilla contraria girando el tronco.' },
   { id: 'sombra_banda', ovv: 100, b: 'tec', p: 'golpes', a: 'bandshadow', nv: 1, on: true, m: ['bandas'], n: 'Sombra con banda elástica', d: 'Banda atada atrás a la altura del pecho, un extremo en cada mano: golpes rectos contra la resistencia.' },
-  { id: 'bolsa_intercalada', ovv: 100, b: 'tec', p: 'combo', a: 'bagmix', nv: 2, on: true, m: ['bolsa'], n: 'Bolsa con ejercicios intercalados', d: 'Trabajo de bolsa y, a la señal, cortar con un ejercicio físico: flexiones, volver a la bolsa, abdominales, bolsa, sentadillas, etc.' },
+  { id: 'bolsa_intercalada', ovv: 100, b: 'tec', p: 'combo', a: 'bagmix', nv: 2, on: true, m: ['bolsa'], n: 'Bolsa con ejercicios intercalados', d: 'Trabajo de bolsa y, a la señal, cortar con 10 repeticiones de un ejercicio: 10 flexiones, volver a la bolsa, 10 abdominales, bolsa, 10 sentadillas, etc.' },
   { id: 'foco_libre', ovv: 100, a: 'focus12', b: 'tec', p: 'golpes', nv: 1, on: true, m: ['foco'], n: 'Round de foco', d: 'Round completo con foco: el compañero marca y el alumno responde con golpes y combinaciones libres.' },
   { id: 'paos_libre', ovv: 100, a: 'kickcross', b: 'tec', p: 'combo', nv: 1, on: true, m: ['paos'], n: 'Round de paos', d: 'Round completo con paos: golpes, patadas, rodillas y codos a ritmo de pelea.' },
   { id: 'bolsa_libre', ovv: 100, a: 'bagcombo', b: 'tec', p: 'golpes', nv: 1, on: true, m: ['bolsa'], n: 'Round de bolsa', d: 'Round completo en la bolsa a ritmo de pelea: golpes, patadas, rodillas y desplazamientos.' },
@@ -1657,7 +1657,7 @@ function startTick() { clearInterval(live.tick); live.last = performance.now(); 
   // bolsa con ejercicios intercalados: 30" de bolsa y 15" de ejercicio, anunciado con la voz
   let enEj = false; if (s.f === 'work' && s.inter) { const el = s.s - live.left, k = Math.floor(el / 45); enEj = el % 45 >= 30; const key = live.i + ':' + k + ':' + enEj;
     if (live.interK !== key) { const prim = live.interK === undefined || !String(live.interK).startsWith(live.i + ':'); live.interK = key; const ej = INTER_EJ[k % INTER_EJ.length];
-      if (!prim && l > 3) { $('#lv-next').textContent = '🗣 ' + (enEj ? '¡' + ej + '!' : '¡Bolsa!'); bell(1); hablar(enEj ? ej : 'Bolsa'); } } }
+      if (!prim && l > 3) { $('#lv-next').textContent = '🗣 ' + (enEj ? '¡10 ' + ej.toLowerCase() + '!' : '¡Bolsa!'); bell(1); hablar(enEj ? '10 ' + ej.toLowerCase() : 'Bolsa'); } } }
   if (s.f === 'work' && s.combo && !enEj && live.comboOn && l > 4 && s.s - live.left > 4 && now - (live.lastCombo || 0) > live.comboEvery * 1000) { live.lastCombo = now; const c = combo(s.combo); $('#lv-next').textContent = '🗣 ' + c; cantar(c); }
   if (s.f === 'work' && s.s >= 30 && l <= 10 && !live.warned) { live.warned = true; setFase('warn'); clack(); if (s.s >= 60) hablar('Diez segundos'); }
   if (s.f !== 'work' && l !== prevL && l <= 3 && l > 0) beep(l === 1 ? 1100 : 760, .12);
