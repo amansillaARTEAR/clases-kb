@@ -686,7 +686,7 @@ function subg(e) {
 }
 const sgLbl = e => { const g = subg(e); return g ? (SUBG[g][0] === 'card' ? SUBG[g][1] : GRUPO[SUBG[g][0]] + ' · ' + SUBG[g][1]) : null; };
 const FILT = {
-  soga: e => (e.m || []).includes('soga'),
+  soga: e => (e.m || []).includes('soga') && e.a === 'rope', // solo saltar la soga (no la soga elástica)
   sup: e => ['emp', 'trac'].includes(e.p),
   inf: e => ['inf', 'pot'].includes(e.p),
   tecsin: e => e.p !== 'guanteo' && !(e.m || []).some(x => ELEM.includes(x)),
