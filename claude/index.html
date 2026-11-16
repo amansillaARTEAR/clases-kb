@@ -733,7 +733,7 @@ const rint = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
 function fechaClase() { const h = horAct(), [hh, mi] = (h.hora || '20:00').split(':').map(Number), ds = h.dias && h.dias.length ? h.dias : [2, 4], d = new Date(); for (let i = 0; i < 7; i++) { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate() + i, hh || 0, mi || 0); if (ds.includes(x.getDay())) return x.toISOString(); } return d.toISOString(); }
 function bloquesBase() { const P = params(semanaAct()), rc = { w: P.rw, r: P.rr };
   return [{ b: 'cal', t: 'Movimiento articular', k: 'cont', cfg: { each: 20 }, items: [] }, { b: 'cal', t: 'Entrada en calor', k: 'cont', cfg: { each: 45 }, items: [] },
-    { b: 'fis', t: 'Físico', k: 'circ', cfg: { w: 20, r: 5, vueltas: 3 }, items: [] }, { b: 'calma', t: 'Estiramiento', k: 'cont', cfg: { each: 90 }, items: [] },
+    { b: 'fis', t: 'Físico', k: 'circ', cfg: { w: 20, r: 5, vueltas: 3 }, items: [] }, { b: 'calma', t: 'Estiramiento', k: 'cont', cfg: { each: 30 }, items: [] },
     { b: 'pausa', t: 'Equiparse', k: 'pausa', cfg: { each: 300 }, items: [] }, { b: 'tec', t: 'Técnica', k: 'rounds', f: 'tecsin', cfg: { ...rc }, items: [] },
     { b: 'tec', t: 'Guanteos', k: 'rounds', f: 'guanteo', cfg: { ...rc }, items: [] }, { b: 'tec', t: 'Bolsa / foco / paos', k: 'rounds', f: 'elem', cfg: { ...rc }, items: [] }]; }
 const mmssC = t => { t = Math.round(t); return Math.floor(t / 60) + "'" + String(t % 60).padStart(2, '0') + '"'; };
@@ -791,7 +791,7 @@ function generar(fechaF, silencioso) {
     const it = conU(() => [...pick(4, 'fis', null, 'iso'), ...pick(2, 'core', null, 'iso')]);
     B.push({ b: 'fis', t: 'Físico · Isométricos', k: 'circ', cfg: { w, r: 20, vueltas: 2 }, items: it }); };
   const finisher = () => B.push({ b: 'fis', t: 'Físico · Final intenso', k: 'circ', cfg: { w: 20, r: 10, vueltas: sem === 4 ? 2 : 3 }, items: conU(() => [...pick(2, 'fis', ['cardio', 'pot']), ...pick(1, 'core')]) });
-  const estir = () => { excl.add('estir_general'); B.push({ b: 'calma', t: 'Estiramiento', k: 'cont', cfg: { each: 90 }, items: [...pick(1, 'calma', ['abertura']), ...pick(3, 'calma', ['calma'])] }); };
+  const estir = () => { excl.add('estir_general'); B.push({ b: 'calma', t: 'Estiramiento', k: 'cont', cfg: { each: 30 }, items: [...pick(1, 'calma', ['abertura']), ...pick(3, 'calma', ['calma'])] }); };
   const prep = () => B.push({ b: 'pausa', t: 'Preparación', k: 'pausa', f: 'prep', cfg: { each: 30 }, items: [] });
   const equip = () => B.push({ b: 'pausa', t: 'Equiparse', k: 'pausa', cfg: { each: 300 }, items: [] });
   const tec = n => n > 0 && B.push({ b: 'tec', t: 'Técnica', k: 'rounds', f: 'tecsin', cfg: rc, items: pick(n, 'tec', null, 'tecsin') });
