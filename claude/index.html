@@ -985,6 +985,10 @@ function vClase() {
   if (!S.draft) S.draft = claseVacia();
   const d = S.draft;
   if (S.avisoGen) h += `<div class="warn" style="margin:0 0 8px">${S.avisoGen}</div>`;
+  { const ya10 = d.bloques.some(b => b.f === 'd10'), cs = circuitos();
+    h += `<div class="card"><b>🧩 Circuitos predefinidos</b><div class="note" style="padding:2px 0 8px">Se agregan a la clase antes del estiramiento.</div><div style="display:flex;flex-wrap:wrap;gap:8px">
+      <button class="btn sm" id="b-add10" ${ya10 ? 'disabled' : ''}>⏱ 10 x 10${ya10 ? ' ✓' : ''}</button>
+      ${cs.map(e => { const ya = d.bloques.some(b => b.k === 'circuito' && b.items[0]?.id === e.id); return `<button class="btn sm" data-addcirc="${e.id}" ${ya ? 'disabled' : ''}>🌴 ${esc(e.n)}${ya ? ' ✓' : ''}</button>`; }).join('')}</div></div>`; }
   if (d.manual && !d.bloques.some(b => b.items.length)) h += `<div class="note" style="margin:0 0 8px">Tocá <b>Generar clase</b> o armala a mano con <b>+ Agregar ejercicio</b> en cada bloque.</div>`;
   h += `<div class="card"><div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px"><div><b>Clase</b>${FORMATOS[d.formato] ? ' · ' + FORMATOS[d.formato] : d.manual ? ' · Armada a mano' : ''} · Carga ${(CARGAS[d.carga] || 'Normal').toLowerCase()} · ≈ ${d.dur} min<div class="note" style="padding:2px 0 0">${FORM_DESC[d.formato] || ''}</div></div>
     <div class="row" style="align-items:flex-end;gap:8px"><div class="stp"><small>Alumnos</small><div><button data-al="-1" aria-label="Menos">−</button><span>${d.alumnos || 0}</span><button data-al="1" aria-label="Más">+</button></div></div>
@@ -1003,8 +1007,6 @@ function vClase() {
   });
   h += `<div style="display:flex;flex-direction:column;align-items:flex-start;gap:8px;margin-top:12px"><button class="btn sm" id="b-addblk">+ Agregar bloque</button>`;
   if (!d.bloques.some(b => b.b === 'pel')) h += `<button class="btn sm" id="b-addpel">🏆 + Bloque Competidores</button>`;
-  if (!d.bloques.some(b => b.f === 'd10')) h += `<button class="btn sm" id="b-add10">⏱ + Circuito 10 x 10</button>`;
-  circuitos().filter(e => !d.bloques.some(b => b.k === 'circuito' && b.items[0]?.id === e.id)).forEach(e => { h += `<button class="btn sm" data-addcirc="${e.id}">🌴 + ${esc(e.n)}</button>`; });
   h += `</div>`;
   return h + `</div>`;
 }
