@@ -422,6 +422,9 @@ const PO = {
  KSH:"50,14 50,24 50,54 44,36 40,46 58,32 64,22 49,74 48,94 66,52 62,68",
  HPA:"50,14 50,24 44,54 42,38 45,52 57,38 50,52 46,74 48,94 50,74 52,94",
  HPB:"50,14 50,24 56,54 43,38 50,52 58,38 55,52 50,74 48,94 54,74 52,94",
+ SK1:"36,20 36,30 36,58 30,40 28,50 42,40 44,50 32,76 32,94 40,76 40,94",
+ SK2:"50,10 50,20 50,48 44,30 42,40 56,30 58,40 46,64 46,80 54,64 54,80",
+ SK3:"64,20 64,30 64,58 58,40 56,50 70,40 72,50 60,76 60,94 68,76 68,94",
  HS1:"54,79 48,70 58,40 46,82 45,94 51,82 51,94 63,24 66,8 64,24 67,8",
  HS2:"54,79 48,70 59,40 46,82 45,94 51,82 51,94 64,24 66,8 65,24 67,8",
  BR1:"48,14 48,24 47,54 58,40 72,46 59,40 73,46 52,74 56,94 42,74 38,94",
@@ -492,7 +495,7 @@ const ANIM = {
  kickcross:A('GU KIK GU CRO GU',.38), c1232:A('GU JAB CRO HOK CRO GU',.28), c112:A('GU JAB GU JAB CRO GU',.26), straights:A('JAB CRO',.18), jabbody:A('GU BJ GU JAB GU',.32), lungehold:A('LUB LUB',1.5),
  dragon:A('DFU DFD',1), bridge:A('BRGD BRGU',.8), snatch:A('DLB DLT OVH DLT',.4), slam:A('OVH SQH',.45), pistol:A('PST PSB',.9), pike:A('PKU PKD',.7), sideplank:A('SPL SPL2',1.1),
  bandrow:A('BR1 BR2',.65,['b_a:95:46']), bandpull:A('PA1 PA2',.6,['b_hands']), bandface:A('FP1 FP2',.6,['b_a:95:20']), bandpush:A('PUU PUD',.6,['b_back']), bandpress:A('BP1 BP2',.6,['b_feet']), bandsquat:A('BP1 BS2',.7,['b_feet']), banddl:A('DLB DLT',.7,['b_feet']), bandwalk:A('LW1 LW2 LW3 LW2',.4,['b_knees']), bandpallof:A('PP1 PP2',.8,['b_a:3:40']), bandchop:A('WB1 WB2',.6,['b_a:3:6']), bandshadow:A('GU JAB GU CRO GU',.3,['b_a:3:40']),
- bagmix:A('GU JAB GU CRO GU PUU PUD PUU GU JAB GU CRO GU SUD SUU SUD GU JAB GU CRO GU SQT SQB SQT',.3,['bolsa']), wallhs:A('HS1 HS2',1,['pared']), escback:A('QF1 QF2 QF1 QF2 LT1 LT2 LT3 LT2',.2,['escalera']), escpunch:A('QF1 QF2 QF1 QF2 GU JAB GU CRO GU',.2,['escalera']),
+ bagmix:A('GU JAB GU CRO GU PUU PUD PUU GU JAB GU CRO GU SUD SUU SUD GU JAB GU CRO GU SQT SQB SQT',.3,['bolsa']), wallhs:A('HS1 HS2',1,['pared']), skiband:A('SK1 SK2 SK3 SK2',.28,['b_esqui']), escback:A('QF1 QF2 QF1 QF2 LT1 LT2 LT3 LT2',.2,['escalera']), escpunch:A('QF1 QF2 QF1 QF2 GU JAB GU CRO GU',.2,['escalera']),
  stretch:A('ST STR STR',1.2), quad:A('QST QST2',1.5), armstretch:A('ARMS ARMS2',1.5), breathe:A('ST ARMB',1.6),
 };
 const ANIM_NAMES = Object.keys(ANIM);
@@ -519,6 +522,7 @@ function propsSvg(pr, q, front) {
     }
     if (x.startsWith('b_')) { const G = '#2ecc71', B = (a, b) => L(a, b, G, 1.8);
       const lf = q[8], rf = q[10], lk = q[7], rk = q[9];
+      if (x === 'b_esqui') s += L([50, 82], [50, 95], G, 3) + `<circle cx="50" cy="82" r="2" fill="#555"/>`;
       if (x === 'b_hands') s += B(lh, rh);
       if (x === 'b_feet') s += B([lf[0], lf[1] - 1], lh) + B([rf[0], rf[1] - 1], rh);
       if (x === 'b_back') { const sh = [n[0] - 2, n[1] - 4], bk = [n[0] - 14, n[1] - 1]; s += L(rh, sh, G, 2.4) + L(sh, bk, G, 2.4); }
@@ -1340,6 +1344,7 @@ const EX_CODE = [
   { id: 'sombra_banda', ovv: 100, b: 'fis', p: 'cardio', a: 'bandshadow', nv: 1, on: true, m: ['bandas'], n: 'Sombra con banda elástica', d: 'Banda atada atrás a la altura del pecho, un extremo en cada mano: golpes rectos contra la resistencia.' },
   { id: 'bolsa_intercalada', ovv: 100, b: 'tec', p: 'combo', a: 'bagmix', nv: 2, on: true, m: ['bolsa'], n: 'Bolsa con ejercicios intercalados', d: 'Trabajo de bolsa y, a la señal, cortar 15 segundos con un ejercicio: flexiones, volver a la bolsa, abdominales, bolsa, sentadillas, etc. La voz avisa cada cambio.' },
   { id: 'vertical_pared', ovv: 100, b: 'fis', p: 'emp', sg: 'hombros', a: 'wallhs', nv: 2, on: true, iso: true, hp: 0, m: [], n: 'Vertical isométrica contra la pared', d: 'Manos en el piso y pies apoyados en la pared, cuerpo recto y brazos firmes; sostener.', z: ['hombros', 'munecas'] },
+  { id: 'esquiadores_banda', ovv: 100, b: 'cal', p: 'cardio', a: 'skiband', nv: 1, on: true, m: ['soga'], n: 'Esquiadores con banda elástica', d: 'Banda elástica tensada baja (la misma de cintura): saltar de lado a lado por encima con pies juntos, como esquiador.' },
   { id: 'foco_libre', ovv: 100, a: 'focus12', b: 'tec', p: 'golpes', nv: 1, on: true, m: ['foco'], n: 'Round de foco', d: 'Round completo con foco: el compañero marca y el alumno responde con golpes y combinaciones libres.' },
   { id: 'paos_libre', ovv: 100, a: 'kickcross', b: 'tec', p: 'combo', nv: 1, on: true, m: ['paos'], n: 'Round de paos', d: 'Round completo con paos: golpes, patadas, rodillas y codos a ritmo de pelea.' },
   { id: 'bolsa_libre', ovv: 100, a: 'bagcombo', b: 'tec', p: 'golpes', nv: 1, on: true, m: ['bolsa'], n: 'Round de bolsa', d: 'Round completo en la bolsa a ritmo de pelea: golpes, patadas, rodillas y desplazamientos.' },
