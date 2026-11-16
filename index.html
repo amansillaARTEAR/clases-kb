@@ -1541,7 +1541,7 @@ function timeline(d) {
     const items = bl.items.map(it => ({ it, e: exById(it.id) })).filter(x => x.e); if (!items.length) return;
     if (k === 'cont') items.forEach(({ e, it }, ix) => { T.push({ f: 'work', s: wIt(bl, it), n: e.n, a: e.a, m: e.m || [], h: e.iso ? (e.hp ?? 1) + 1 : 0, blk: B, sub: fmt(c.each) }); if (c.r > 0 && ix < items.length - 1) T.push({ f: 'rest', s: c.r, n: 'Pausa', blk: B }); });
     else if (k === 'rounds') { const tot = items.reduce((a, x) => a + (x.it.rounds || 1), 0); let i = 0;
-      items.forEach(({ e, it }) => { for (let r = 1; r <= (it.rounds || 1); r++) { i++; T.push({ f: 'work', s: wIt(bl, it), n: e.n, a: e.a, m: e.m || [], h: e.iso ? (e.hp ?? 1) + 1 : 0, blk: B, sub: `Round ${i} de ${tot}`, combo: bl.f === 'guanteo' ? null : ((e.m || []).includes('foco') ? 'manos' : 'todo') }); T.push({ f: 'rest', s: c.r, n: 'Descanso', blk: B }); } }); }
+      items.forEach(({ e, it }) => { for (let r = 1; r <= (it.rounds || 1); r++) { i++; T.push({ f: 'work', s: wIt(bl, it), n: e.n, a: e.a, m: e.m || [], h: e.iso ? (e.hp ?? 1) + 1 : 0, blk: B, sub: `Round ${i} de ${tot}`, inter: e.id === 'bolsa_intercalada', combo: bl.f === 'guanteo' ? null : ((e.m || []).includes('foco') ? 'manos' : 'todo') }); T.push({ f: 'rest', s: c.r, n: 'Descanso', blk: B }); } }); }
     else for (let v = 1; v <= c.vueltas; v++) { items.forEach(({ e, it }) => { T.push({ f: 'work', s: wIt(bl, it), n: e.n + (pesoSug(e, d.carga, 1) ? ` · ${pesoSug(e, d.carga, 1)}` : ''), a: e.a, m: e.m || [], h: e.iso ? (e.hp ?? 1) + 1 : 0, blk: B, sub: `Vuelta ${v} de ${c.vueltas}` }); T.push({ f: 'rest', s: c.r, n: 'Pausa', blk: B }); }); if (v < c.vueltas) T.push({ f: 'rest', s: c.rv ?? PAUSA(), n: 'Descanso entre vueltas', blk: B, keep: 1 }); }
   });
   // une descansos consecutivos y saca el último descanso de cada bloque antes de cambiar
@@ -1554,6 +1554,7 @@ let tts = null, ttsOff = false, actx = null;
 const GOLPES = ['jab', 'cross', 'gancho', 'uppercut', 'doble jab', 'gancho al cuerpo'];
 const PIERNAS = ['low kick', 'patada media', 'patada alta', 'teep', 'rodilla', 'codo', 'switch kick'];
 const DEF = ['esquiva', 'chequeo', 'salida lateral', 'bloqueo'];
+const INTER_EJ = ['Flexiones', 'Abdominales', 'Sentadillas', 'Burpees'];
 function combo(tipo) {
   const n = 2 + Math.floor(Math.random() * 3), out = [];
   for (let i = 0; i < n; i++) {
@@ -1653,7 +1654,11 @@ function pintarT() { const s = live.segs[live.i]; if (!s) return; $('#lv-time').
 function startTick() { clearInterval(live.tick); live.last = performance.now(); live.tick = setInterval(() => {
   const now = performance.now(), dt = (now - live.last) / 1000; live.last = now; if (!live.run) return;
   const prevL = Math.ceil(live.left); live.left -= dt; const l = Math.ceil(live.left), s = live.segs[live.i];
-  if (s.f === 'work' && s.combo && live.comboOn && l > 4 && s.s - live.left > 4 && now - (live.lastCombo || 0) > live.comboEvery * 1000) { live.lastCombo = now; const c = combo(s.combo); $('#lv-next').textContent = '🗣 ' + c; cantar(c); }
+  // bolsa con ejercicios intercalados: 30" de bolsa y 15" de ejercicio, anunciado con la voz
+  let enEj = false; if (s.f === 'work' && s.inter) { const el = s.s - live.left, k = Math.floor(el / 45); enEj = el % 45 >= 30; const key = live.i + ':' + k + ':' + enEj;
+    if (live.interK !== key) { const prim = live.interK === undefined || !String(live.interK).startsWith(live.i + ':'); live.interK = key; const ej = INTER_EJ[k % INTER_EJ.length];
+      if (!prim && l > 3) { $('#lv-next').textContent = '🗣 ' + (enEj ? '¡' + ej + '!' : '¡Bolsa!'); bell(1); hablar(enEj ? ej : 'Bolsa'); } } }
+  if (s.f === 'work' && s.combo && !enEj && live.comboOn && l > 4 && s.s - live.left > 4 && now - (live.lastCombo || 0) > live.comboEvery * 1000) { live.lastCombo = now; const c = combo(s.combo); $('#lv-next').textContent = '🗣 ' + c; cantar(c); }
   if (s.f === 'work' && s.s >= 30 && l <= 10 && !live.warned) { live.warned = true; setFase('warn'); clack(); if (s.s >= 60) hablar('Diez segundos'); }
   if (s.f !== 'work' && l !== prevL && l <= 3 && l > 0) beep(l === 1 ? 1100 : 760, .12);
   if (live.left <= 0) { live.i++; iniciarSeg(); } else pintarT();
