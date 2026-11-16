@@ -827,7 +827,7 @@ function generar(fechaF, silencioso) {
     const it = conU(() => [...pick(4, 'fis', null, 'iso'), ...pick(2, 'core', null, 'iso')]);
     B.push({ b: 'fis', t: 'Circuito · Isométricos', k: 'circ', cfg: { w, r: 20, vueltas: 2 }, items: it }); };
   const finisher = () => B.push({ b: 'fis', t: 'Circuito · Final intenso', k: 'circ', cfg: { w: 20, r: 10, vueltas: sem === 4 ? 2 : 3 }, items: conU(() => [...pick(2, 'fis', ['cardio', 'pot']), ...pick(1, 'core')]) });
-  const estir = () => { excl.add('estir_general'); B.push({ b: 'calma', t: 'Estiramiento', k: 'cont', cfg: { each: 30 }, items: [...pick(1, 'calma', ['abertura']), ...pick(3, 'calma', ['calma'])] }); };
+  const estir = () => { excl.add('estir_general'); B.push({ b: 'calma', t: 'Estiramiento', k: 'cont', cfg: { each: 30 }, items: [...pick(3, 'calma', ['calma']).sort((x, y) => -ordCuerpo(exById(x.id) || x, exById(y.id) || y)), ...pick(1, 'calma', ['abertura'])] }); };
   const prep = () => B.push({ b: 'pausa', t: 'Preparación', k: 'pausa', f: 'prep', cfg: { each: 30 }, items: [] });
   const equip = () => B.push({ b: 'pausa', t: 'Equiparse', k: 'pausa', cfg: { each: 300 }, items: [] });
   const tec = n => n > 0 && B.push({ b: 'tec', t: 'Técnica', k: 'rounds', f: 'tecsin', cfg: rc, items: pick(n, 'tec', null, 'tecsin') });
