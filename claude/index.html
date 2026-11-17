@@ -688,9 +688,7 @@ function ponerFisico(nuevos) { const B = S.draft.bloques, esF = x => (x.b === 'f
 // circuito por grupo muscular: tren superior, tren inferior y core, 4 ejercicios de 20" con 5" de descanso, alternando ejercicios entre clases
 function bloquesGrupos() { const uso = usoReciente(), excl = new Set(), esq = { w: 20, r: 5, vueltas: 3 };
   const mk = (b, ps, fk) => conU(() => ps.map(p => elegir(b, p, excl, uso, fk)).filter(Boolean).map(x => ({ id: x.id, b, f: fk ?? null })));
-  return [{ b: 'fis', t: '💪 3 x 4 · Tren superior', k: 'circ', f: 'sup', g: 'grp', cfg: { ...esq }, items: mk('fis', ['sg:empuje', 'sg:traccion', 'sg:hombros', 'sg:traccion'], 'sup') },
-    { b: 'fis', t: '💪 3 x 4 · Tren inferior', k: 'circ', f: 'inf', g: 'grp', cfg: { ...esq }, items: mk('fis', ['sg:rodilla', 'sg:cadera', 'sg:saltos', 'sg:rodilla'], 'inf') },
-    { b: 'core', t: '💪 3 x 4 · Core', k: 'circ', g: 'grp', cfg: { ...esq }, items: mk('core', ['sg:abdominales', 'sg:planchas', 'sg:rotacion', 'sg:lateral']) }]; }
+  return [{ b: 'fis', t: '💪 3 x 4', k: 'circ', g: 'grp', cfg: { w: 20, r: 5, vueltas: 3, rv: 60 }, items: [...mk('fis', ['sg:empuje', 'sg:traccion', 'sg:hombros', 'sg:traccion'], 'sup'), ...mk('fis', ['sg:rodilla', 'sg:cadera', 'sg:saltos', 'sg:rodilla'], 'inf'), ...mk('core', ['sg:abdominales', 'sg:planchas', 'sg:rotacion', 'sg:lateral'])] }]; }
 // circuito predefinido: si la clase está vacía, se generan también los demás bloques
 // equilibrio: si la parte física es exigente, la entrada en calor es suave
 function fisicoDuro(B) { const F = B.filter(b => (b.b === 'fis' || b.b === 'core') && b.k !== 'pausa');
@@ -1113,7 +1111,7 @@ function vClase() {
   { const ya10 = d.bloques.some(b => b.f === 'd10'), cs = circuitos();
     h += `<div class="card"><b>🧩 Bloques y circuitos predefinidos</b><div class="note" style="padding:2px 0 8px">Competencia se suma a la clase. Los circuitos <b>reemplazan al bloque Circuito</b>.</div><div style="display:grid;grid-template-columns:max-content 1fr;gap:6px 10px;align-items:center">
       ${(() => { const R = (btn, txt) => `${btn}<small class="mut" style="line-height:1.2;font-size:11.5px">${txt}</small>`, ya = d.bloques.some(b => b.b === 'pel'), yaG = d.bloques.some(b => b.g === 'grp');
-        return R(`<button class="btn sm" id="b-addgrp" ${yaG ? 'disabled' : ''} style="justify-self:start;white-space:nowrap;padding:3px 9px;font-size:12px;min-height:0;line-height:1.2">💪 3 x 4${yaG ? ' ✓' : ''}</button>`, 'Tren sup., tren inf. y core: 4 ejercicios de 20" / 5", 3 vueltas.')
+        return R(`<button class="btn sm" id="b-addgrp" ${yaG ? 'disabled' : ''} style="justify-self:start;white-space:nowrap;padding:3px 9px;font-size:12px;min-height:0;line-height:1.2">💪 3 x 4${yaG ? ' ✓' : ''}</button>`, '12 ejercicios (4 tren sup., 4 tren inf., 4 core) de 20" / 5"; 3 vueltas con 1\' entre vueltas.')
         + R(`<button class="btn sm" id="b-add10" ${ya10 ? 'disabled' : ''} style="justify-self:start;white-space:nowrap;padding:3px 9px;font-size:12px;min-height:0;line-height:1.2">⏱ 10 x 10${ya10 ? ' ✓' : ''}</button>`, '10" trabajo / 10" descanso; 1\' entre grupos.')
         + cs.map(e => { const y = d.bloques.some(b => b.k === 'circuito' && b.items[0]?.id === e.id); return R(`<button class="btn sm" data-addcirc="${e.id}" ${y ? 'disabled' : ''} style="justify-self:start;white-space:nowrap;padding:3px 9px;font-size:12px;min-height:0;line-height:1.2">🌴 ${esc(e.n)}${y ? ' ✓' : ''}</button>`, e.id === 'circuito_selvatico' ? 'Estaciones por parejas, con tiempo de cada pareja.' : esc((e.d || '').split('.')[0])); }).join('')
         + R(`<button class="btn sm" id="b-addiso" ${d.bloques.some(b => b.g === 'iso') ? 'disabled' : ''} style="justify-self:start;white-space:nowrap;padding:3px 9px;font-size:12px;min-height:0;line-height:1.2">🧱 Isométrico${d.bloques.some(b => b.g === 'iso') ? ' ✓' : ''}</button>`, '6 ejercicios sostenidos con materiales: 40" / 20", 2 vueltas.')
