@@ -1803,7 +1803,7 @@ function cantar(t) { // voz rápida del navegador para las combinaciones (no con
 }
 const AC = () => { actx ||= new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume().catch?.(() => {}); return actx; };
 // salida más fuerte: ganancia + compresor (sube el volumen sin saturar)
-const OUT = a => { if (!a._out) { const g = a.createGain(), c = a.createDynamicsCompressor(); g.gain.value = 3; c.threshold.value = -18; c.knee.value = 6; c.ratio.value = 8; c.attack.value = .003; c.release.value = .15; g.connect(c); c.connect(OUT(a)); a._out = g; } return a._out; };
+const OUT = a => { if (!a._out) { const g = a.createGain(), c = a.createDynamicsCompressor(); g.gain.value = 3; c.threshold.value = -18; c.knee.value = 6; c.ratio.value = 8; c.attack.value = .003; c.release.value = .15; g.connect(c); c.connect(a.destination); a._out = g; } return a._out; };
 // desbloquear audio y voz en celulares (iOS/Android piden un toque del usuario)
 let audioOk = false;
 const desbloquear = () => { if (audioOk) return; audioOk = true; try { const a = AC(), b = a.createBuffer(1, 1, 22050), src = a.createBufferSource(); src.buffer = b; src.connect(OUT(a)); src.start(0); } catch (e) {}
