@@ -725,9 +725,9 @@ function bloques1a10() { const uso = usoReciente(), N = d10Gente(), ok = e => !e
     ['Core', bol(/rodilla|clinch/), fresco(candidatos('core', new Set()).filter(e => ok(e) && !(e.m || []).length)), null, 'core'],
     ['Piernas', bol(/patada|low|circular|kick/), fresco(candidatos('fis', new Set(), 'inf').filter(e => ok(e) && !(e.m || []).length)), 'inf', 'fis']];
   const items = E.flatMap(([gr, b1, f1, fk, bb]) => [b1 && { id: b1.id, b: 'tec', f: 'elem', gr }, f1 && { id: f1.id, b: bb, f: fk, gr }].filter(Boolean));
-  // por ahora, los ejercicios fijos que indicó el profe (con ↻ se pueden cambiar)
+  // hasta el martes 24/11: los ejercicios fijos que indicó el profe; desde el miércoles 25/11 vuelve a variar
   const FIJO = [['Tren superior', 'bolsa_12', 'tec', 'elem'], ['Tren superior', 'flexiones', 'fis', 'sup'], ['Core', 'bolsa_rodilla_frontal', 'tec', 'elem'], ['Core', 'mountain_climbers', 'core', null], ['Piernas', 'bolsa_circulares', 'tec', 'elem'], ['Piernas', 'sent_libre', 'fis', 'inf']];
-  if (FIJO.every(([, id]) => exById(id))) return [{ b: 'fis', t: '🔟 1 a 10', k: 'esc10', g: 'esc10', cfg: { cap: 600, r: 60 }, items: FIJO.map(([gr, id, b, f]) => ({ id, b, f, gr })) }];
+  if (new Date() < new Date(2026, 10, 25) && FIJO.every(([, id]) => exById(id))) return [{ b: 'fis', t: '🔟 1 a 10', k: 'esc10', g: 'esc10', cfg: { cap: 600, r: 60 }, items: FIJO.map(([gr, id, b, f]) => ({ id, b, f, gr })) }];
   return [{ b: 'fis', t: '🔟 1 a 10', k: 'esc10', g: 'esc10', cfg: { cap: 600, r: 60 }, items }]; }
 function bloques10x10() { return D10G.map(([g, , t], k) => ({ b: g === 'core' ? 'core' : 'fis', t: '⏱ 10 x 10 · ' + t, k: 'circ', f: 'd10', g, cfg: { w: 10, r: 10, vueltas: 1, rv: 10, ...(k ? { pa: 60 } : {}) }, items: d10Items(g, 10) })); }
 // estiramientos ordenados por zona del cuerpo, de la cabeza a los pies
