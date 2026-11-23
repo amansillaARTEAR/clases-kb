@@ -1716,7 +1716,7 @@ $('#main').addEventListener('click', e => {
   if (b.id === 'b-addblk' && S.draft) { const L = bloquesBase(); const m = modal(`<h3 style="margin-top:0">Agregar bloque</h3>${L.map((x, i) => `<button class="btn" data-nb="${i}" style="display:block;width:100%;text-align:left;margin-bottom:6px">${esc(x.t)}</button>`).join('')}<div class="row" style="justify-content:flex-end"><button class="btn" id="nb-x">Cancelar</button></div>`);
     m.onclick = ev => { const t = ev.target.closest('[data-nb]'); if (ev.target.id === 'nb-x') m.remove(); if (!t) return; const nb = L[+t.dataset.nb], B = S.draft.bloques, ord = L.map(x => x.t);
       let pos = B.findIndex(x => ord.indexOf(x.t) > ord.indexOf(nb.t)); if (pos < 0) pos = B.length; B.splice(pos, 0, nb); m.remove(); recalcular(); }; return; }
-  if (b.dataset.rd && S.draft) { const [x, y, dd] = b.dataset.rd.split(',').map(Number), it = S.draft.bloques[x].items[y]; it.rounds = Math.min(4, Math.max(1, (it.rounds || 1) + dd)); recalcular(); return; }
+  if (b.dataset.rd && S.draft) { const [x, y, dd] = b.dataset.rd.split(',').map(Number), it = S.draft.bloques[x].items[y]; it.rounds = Math.min(12, Math.max(1, (it.rounds || 1) + dd)); recalcular(); return; }
   if (b.dataset.iw && S.draft) { const [x, y, dd] = b.dataset.iw.split(',').map(Number), bl = S.draft.bloques[x], it = bl.items[y], base = wIt(bl, { ...it, w: undefined }), nv = Math.max(5, wIt(bl, it) + dd * 5); if (nv === base) delete it.w; else it.w = nv; recalcular(); return; }
   if (b.dataset.add) { agregarEj(+b.dataset.add); return; }
   if (b.dataset.sw) { const [x, y] = b.dataset.sw.split(',').map(Number); cambiar(x, y); }
