@@ -725,6 +725,9 @@ function bloques1a10() { const uso = usoReciente(), N = d10Gente(), ok = e => !e
     ['Core', bol(/rodilla|clinch/), fresco(candidatos('core', new Set()).filter(e => ok(e) && !(e.m || []).length)), null, 'core'],
     ['Piernas', bol(/patada|low|circular|kick/), fresco(candidatos('fis', new Set(), 'inf').filter(e => ok(e) && !(e.m || []).length)), 'inf', 'fis']];
   const items = E.flatMap(([gr, b1, f1, fk, bb]) => [b1 && { id: b1.id, b: 'tec', f: 'elem', gr }, f1 && { id: f1.id, b: bb, f: fk, gr }].filter(Boolean));
+  // por ahora, los ejercicios fijos que indicó el profe (con ↻ se pueden cambiar)
+  const FIJO = [['Tren superior', 'bolsa_12', 'tec', 'elem'], ['Tren superior', 'flexiones', 'fis', 'sup'], ['Core', 'bolsa_rodilla_frontal', 'tec', 'elem'], ['Core', 'mountain_climbers', 'core', null], ['Piernas', 'bolsa_circulares', 'tec', 'elem'], ['Piernas', 'sent_libre', 'fis', 'inf']];
+  if (FIJO.every(([, id]) => exById(id))) return [{ b: 'fis', t: '🔟 1 a 10', k: 'esc10', g: 'esc10', cfg: { cap: 600, r: 60 }, items: FIJO.map(([gr, id, b, f]) => ({ id, b, f, gr })) }];
   return [{ b: 'fis', t: '🔟 1 a 10', k: 'esc10', g: 'esc10', cfg: { cap: 600, r: 60 }, items }]; }
 function bloques10x10() { return D10G.map(([g, , t], k) => ({ b: g === 'core' ? 'core' : 'fis', t: '⏱ 10 x 10 · ' + t, k: 'circ', f: 'd10', g, cfg: { w: 10, r: 10, vueltas: 1, rv: 10, ...(k ? { pa: 60 } : {}) }, items: d10Items(g, 10) })); }
 // estiramientos ordenados por zona del cuerpo, de la cabeza a los pies
@@ -1415,6 +1418,8 @@ const EX_CODE = [
   { id: 'iso_hollow_disco', ovv: 100, b: 'core', p: 'core', a: 'hollowp', nv: 2, on: true, iso: true, hp: 0, m: ['discos'], n: 'Hollow sostenido con disco', d: 'Boca arriba en posición hollow, disco en las manos con brazos estirados atrás; sostener.' },
   { id: 'tec_jab_upper_cross_rodilla', ovv: 100, b: 'tec', p: 'combo', a: 'jucrk', nv: 1, on: true, m: [], n: 'Técnica: jab + uppercut + cross de izquierda + rodilla de atrás', d: 'Combinación de jab, uppercut, cross de izquierda y rodilla con la pierna de atrás, volviendo a guardia.' },
   { id: 'tec_jab_upper_cross_rodilla_bici', ovv: 100, b: 'tec', p: 'combo', a: 'jucrkb', nv: 2, on: true, m: [], n: 'Técnica: jab + uppercut + cross de izquierda + rodilla en bicicleta', d: 'Misma combinación, terminando con rodilla de atrás en bicicleta (cambio de pierna en el aire).' },
+  { id: 'bolsa_12', ovv: 100, b: 'tec', p: 'golpes', a: 'straights', nv: 1, on: true, m: ['bolsa'], n: 'Bolsa: 1-2', d: 'Jab y cross en la bolsa, volviendo las manos a la cara.' },
+  { id: 'bolsa_rodilla_frontal', ovv: 100, b: 'tec', p: 'clinch', a: 'knee', nv: 1, on: true, m: ['bolsa'], n: 'Bolsa: rodillas frontales', d: 'Rodillas rectas a la bolsa con cada pierna.' },
   { id: 'foco_libre', ovv: 100, a: 'focus12', b: 'tec', p: 'golpes', nv: 1, on: true, m: ['foco'], n: 'Round de foco', d: 'Round completo con foco: el compañero marca y el alumno responde con golpes y combinaciones libres.' },
   { id: 'paos_libre', ovv: 100, a: 'kickcross', b: 'tec', p: 'combo', nv: 1, on: true, m: ['paos'], n: 'Round de paos', d: 'Round completo con paos: golpes, patadas, rodillas y codos a ritmo de pelea.' },
   { id: 'bolsa_libre', ovv: 100, a: 'bagcombo', b: 'tec', p: 'golpes', nv: 1, on: true, m: ['bolsa'], n: 'Round de bolsa', d: 'Round completo en la bolsa a ritmo de pelea: golpes, patadas, rodillas y desplazamientos.' },
