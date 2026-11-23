@@ -821,7 +821,7 @@ function bloquesBase() { const P = params(semanaAct()), rc = { w: P.rw, r: P.rr 
 const mmssC = t => { t = Math.round(t); return Math.floor(t / 60) + "'" + String(t % 60).padStart(2, '0') + '"'; };
 function tiemposHtml(T) { if (!T || !Object.keys(T).length) return ''; const L = Object.entries(T).map(([a, v]) => [a, v.filter(x => x != null)]).filter(x => x[1].length).sort((x, y) => Math.min(...x[1]) - Math.min(...y[1]));
   return `<div class="note" style="text-align:center">⏱ ${L.map(([a, v], i) => `${i === 0 ? '🥇 ' : ''}<b>${esc(a)}</b> ${v.map(mmssC).join(' / ')}`).join(' · ')}</div>`; }
-function editarParejas(bi) { const bl = S.draft.bloques[bi], d = S.draft;
+function editarParejas(bi, alListo) { const bl = S.draft.bloques[bi], d = S.draft;
   const todos = (S.alumnos || []).filter(a => alEnGrupo(a) || (d.presentes || []).includes(a)), sel = new Set(d.presentes?.length ? d.presentes : (bl.parejas || []).flat().length ? (bl.parejas || []).flat() : todos);
   let P = JSON.parse(JSON.stringify(bl.parejas || []));
   const m = modal(`<h3 style="margin-top:0">👥 Parejas · ${esc(titulo(bl))}</h3><div class="note" style="padding-top:0">Marcá en rojo a los que vinieron y armalas al azar con <b>🎲</b> o de a una con <b>Nueva pareja a mano</b>. ⇄ cambia quién arranca y ✕ quita la pareja.</div>
@@ -835,7 +835,8 @@ function editarParejas(bi) { const bl = S.draft.bloques[bi], d = S.draft;
   m.querySelector('#pa-l').onclick = ev => { const d = ev.target.closest('[data-pdel]'); if (d) { P.splice(+d.dataset.pdel, 1); pint(); return; } const b = ev.target.closest('[data-sw]'); if (!b) return; const p = P[+b.dataset.sw]; p.push(p.shift()); pint(); };
   m.querySelector('#pa-new').onclick = ev => { if (ev.target.id !== 'pa-add') return; const a = m.querySelector('#pa-a').value, b2 = m.querySelector('#pa-b').value; if (!a || !b2 || a === b2) { toast('Elegí dos personas distintas.'); return; } P.push([a, b2]); pint(); };
   m.querySelector('#pa-clr').onclick = () => { delete bl.parejas; m.remove(); saveDraftLocal(); render(); };
-  m.querySelector('#pa-ok').onclick = () => { if (P.length) bl.parejas = P; else delete bl.parejas; m.remove(); saveDraftLocal(); render(); };
+  if (alListo) { m.querySelector('#pa-ok').textContent = '▶ Empezar'; m.querySelector('#pa-clr').style.display = 'none'; }
+  m.querySelector('#pa-ok').onclick = () => { if (alListo && !P.length) { toast('Armá al menos una pareja.'); return; } if (P.length) bl.parejas = P; else delete bl.parejas; m.remove(); saveDraftLocal(); render(); if (alListo) alListo(); };
 }
 function claseVacia() { const B = bloquesBase();
   B.forEach(bl => bl.min = Math.round(durBloque(bl) / 60));
@@ -1496,7 +1497,7 @@ function editar(id) {
     m.remove(); guardarEj(ne);
   };
 }
-function iniciarClase() { const ci = S.draft.bloques.findIndex(x => x.k === 'circuito' && !x.parejas?.length); if (ci >= 0) { toast('Primero armá las parejas del circuito.'); editarParejas(ci); return; }
+function iniciarClase(ok) { const ci = S.draft.bloques.findIndex(x => x.k === 'circuito'); if (ci >= 0 && !ok) { editarParejas(ci, () => iniciarClase(1)); return; } // siempre confirmar las parejas antes de arrancar
   abrirLive(timeline(S.draft), 'Clase', `${FORMATOS[S.draft.formato] || ''} · Carga ${(CARGAS[S.draft.carga] || 'Normal').toLowerCase()}`, true); }
 function editarPlan(p) { S.edPlan = { prev: S.draft }; S.draft = JSON.parse(JSON.stringify({ ...p, _id: null, _saved: false, _plan: p._id })); delete S.draft._id; S.draft.bloques.forEach(bl => bl.min = Math.round(durBloque(bl) / 60)); S.draft.dur = durTotal(S.draft.bloques); S.tab = 'clase'; render(); window.scrollTo(0, 0); }
 // ===== clase diferenciada: copia de una clase planificada para un alumno, con link que abre el timer =====
