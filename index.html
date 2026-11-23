@@ -1798,21 +1798,23 @@ function combo(tipo) {
 }
 function cantar(t) { // voz rápida del navegador para las combinaciones (no consume la voz de Claude)
   if (!live.voice) return;
-  try { if ('speechSynthesis' in window) { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = 'es-AR'; u.rate = Math.max(1.15, VOZ.rate + .2); const nv = VOZ.v.startsWith('nav:') && vocesNav().find(v => v.name === VOZ.v.slice(4)); if (nv) { u.voice = nv; u.lang = nv.lang; } speechSynthesis.speak(u); return; } } catch (e) {}
+  try { if ('speechSynthesis' in window) { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.volume = 1; u.lang = 'es-AR'; u.rate = Math.max(1.15, VOZ.rate + .2); const nv = VOZ.v.startsWith('nav:') && vocesNav().find(v => v.name === VOZ.v.slice(4)); if (nv) { u.voice = nv; u.lang = nv.lang; } speechSynthesis.speak(u); return; } } catch (e) {}
   hablar(t);
 }
 const AC = () => { actx ||= new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume().catch?.(() => {}); return actx; };
+// salida más fuerte: ganancia + compresor (sube el volumen sin saturar)
+const OUT = a => { if (!a._out) { const g = a.createGain(), c = a.createDynamicsCompressor(); g.gain.value = 3; c.threshold.value = -18; c.knee.value = 6; c.ratio.value = 8; c.attack.value = .003; c.release.value = .15; g.connect(c); c.connect(OUT(a)); a._out = g; } return a._out; };
 // desbloquear audio y voz en celulares (iOS/Android piden un toque del usuario)
 let audioOk = false;
-const desbloquear = () => { if (audioOk) return; audioOk = true; try { const a = AC(), b = a.createBuffer(1, 1, 22050), src = a.createBufferSource(); src.buffer = b; src.connect(a.destination); src.start(0); } catch (e) {}
+const desbloquear = () => { if (audioOk) return; audioOk = true; try { const a = AC(), b = a.createBuffer(1, 1, 22050), src = a.createBufferSource(); src.buffer = b; src.connect(OUT(a)); src.start(0); } catch (e) {}
   try { if ('speechSynthesis' in window) { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); } } catch (e) {} };
 ['pointerdown', 'touchend', 'click'].forEach(ev => document.addEventListener(ev, desbloquear, { capture: true, passive: true }));
-function beep(fr = 880, d = .12, vol = .25) { try { const a = AC(), o = a.createOscillator(), g = a.createGain(); o.frequency.value = fr; o.connect(g); g.connect(a.destination); g.gain.setValueAtTime(vol, a.currentTime); g.gain.exponentialRampToValueAtTime(.001, a.currentTime + d); o.start(); o.stop(a.currentTime + d); } catch (e) {} }
+function beep(fr = 880, d = .12, vol = .25) { try { const a = AC(), o = a.createOscillator(), g = a.createGain(); o.frequency.value = fr; o.connect(g); g.connect(OUT(a)); g.gain.setValueAtTime(vol, a.currentTime); g.gain.exponentialRampToValueAtTime(.001, a.currentTime + d); o.start(); o.stop(a.currentTime + d); } catch (e) {} }
 // campana de ring sintetizada (parciales inarmónicos)
 function bell(n = 1) { try { const a = AC(); for (let k = 0; k < n; k++) { const t0 = a.currentTime + k * .32;
-  [[750, .5], [1500, .25], [2185, .18], [2960, .1], [3870, .06]].forEach(([f, v]) => { const o = a.createOscillator(), g = a.createGain(); o.type = 'sine'; o.frequency.value = f; o.connect(g); g.connect(a.destination); g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(v * .55, t0 + .005); g.gain.exponentialRampToValueAtTime(.0008, t0 + 1.6); o.start(t0); o.stop(t0 + 1.7); }); } } catch (e) {} }
+  [[750, .5], [1500, .25], [2185, .18], [2960, .1], [3870, .06]].forEach(([f, v]) => { const o = a.createOscillator(), g = a.createGain(); o.type = 'sine'; o.frequency.value = f; o.connect(g); g.connect(OUT(a)); g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(v * .55, t0 + .005); g.gain.exponentialRampToValueAtTime(.0008, t0 + 1.6); o.start(t0); o.stop(t0 + 1.7); }); } } catch (e) {} }
 // aviso de 10 segundos (golpe de madera)
-function clack() { try { const a = AC(); [0, .14].forEach(dt => { const t0 = a.currentTime + dt, b = a.createBuffer(1, a.sampleRate * .05, a.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 6); const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); f.type = 'bandpass'; f.frequency.value = 2200; f.Q.value = 4; s.buffer = b; s.connect(f); f.connect(g); g.connect(a.destination); g.gain.value = 2.2; s.start(t0); }); } catch (e) {} }
+function clack() { try { const a = AC(); [0, .14].forEach(dt => { const t0 = a.currentTime + dt, b = a.createBuffer(1, a.sampleRate * .05, a.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 6); const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); f.type = 'bandpass'; f.frequency.value = 2200; f.Q.value = 4; s.buffer = b; s.connect(f); f.connect(g); g.connect(OUT(a)); g.gain.value = 2.2; s.start(t0); }); } catch (e) {} }
 // voz elegida (se guarda en este navegador)
 const VOCES_C = { buttery: 'Cálida', airy: 'Suave', glassy: 'Clara', rounded: 'Redonda' };
 let VOZ = (() => { try { return { v: 'buttery', rate: 1.05, ...JSON.parse(localStorage.getItem('kb_voz') || '{}') }; } catch (e) { return { v: 'buttery', rate: 1.05 }; } })();
@@ -1823,7 +1825,7 @@ function hablar(t, forzar) {
   t = String(t || '').replace(/[\p{Extended_Pictographic}\u{FE0F}\u{200D}]/gu, '').replace(/\s+/g, ' ').trim();
   if (!live.voice && !forzar) return;
   if (!forzar && !hablar._d) { hablar._d = 1; setTimeout(() => { hablar._d = 0; hablar(t, 'd'); }, 0); return; } if (forzar === 'd') forzar = false;
-  const nativo = () => { try { if (!('speechSynthesis' in window)) return; speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = 'es-AR'; u.rate = VOZ.rate; const nv = VOZ.v.startsWith('nav:') && vocesNav().find(v => v.name === VOZ.v.slice(4)); if (nv) { u.voice = nv; u.lang = nv.lang; } speechSynthesis.speak(u); } catch (e) {} };
+  const nativo = () => { try { if (!('speechSynthesis' in window)) return; speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.volume = 1; u.lang = 'es-AR'; u.rate = VOZ.rate; const nv = VOZ.v.startsWith('nav:') && vocesNav().find(v => v.name === VOZ.v.slice(4)); if (nv) { u.voice = nv; u.lang = nv.lang; } speechSynthesis.speak(u); } catch (e) {} };
   if (VOZ.v.startsWith('nav:')) { nativo(); return; }
   if (tts && !ttsOff) tts.speak(t, { language: 'es', rate: VOZ.rate, voice: VOZ.v }).catch(e => { if (e?.code === 'not_granted') { ttsOff = true; } else if (['rate_limited', 'unavailable', 'upstream_error'].includes(e?.code)) nativo(); });
   else if (!ttsOff) nativo();
