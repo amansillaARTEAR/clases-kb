@@ -454,8 +454,8 @@ const PO = {
  KSH:"50,14 50,24 50,54 44,36 40,46 58,32 64,22 49,74 48,94 66,52 62,68",
  HPA:"50,14 50,24 44,54 42,38 45,52 57,38 50,52 46,74 48,94 50,74 52,94",
  HPB:"50,14 50,24 56,54 43,38 50,52 58,38 55,52 50,74 48,94 54,74 52,94",
- KB1:"56,12 55,22 50,50 62,26 68,20 61,28 68,21 60,64 56,80 45,68 41,84",
- KB2:"58,10 57,20 51,48 65,22 72,18 63,24 72,19 52,66 50,84 66,38 58,58",
+ KB1:"56,12 55,22 50,50 62,26 68,20 61,28 68,21 56,72 58,90 62,48 56,66",
+ KB2:"58,10 57,20 51,48 65,22 72,18 63,24 72,19 66,38 58,58 46,66 42,82",
  SE1:"38,14 38,24 37,54 46,14 54,5 47,14 55,5 39,74 40,94 36,74 35,94",
  SEM:"42,17 41,27 35,56 51,34 60,44 52,34 61,44 40,75 40,94 37,75 35,94",
  SE2:"57,34 50,41 32,58 50,54 47,68 51,54 48,68 42,75 40,94 39,75 36,94",
@@ -532,7 +532,7 @@ const ANIM = {
  kickcross:A('GU KIK GU CRO GU',.38), c1232:A('GU JAB CRO HOK CRO GU',.28), c112:A('GU JAB GU JAB CRO GU',.26), straights:A('JAB CRO',.18), jabbody:A('GU BJ GU JAB GU',.32), lungehold:A('LUB LUB',1.5),
  dragon:A('DFU DFD',1), bridge:A('BRGD BRGU',.8), snatch:A('DLB DLT OVH DLT',.4), slam:A('OVH SQH',.45), pistol:A('PST PSB',.9), pike:A('PKU PKD',.7), sideplank:A('SPL SPL2',1.1),
  bandrow:A('BR1 BR2',.65,['b_a:95:46']), bandpull:A('PA1 PA2',.6,['b_hands']), bandface:A('FP1 FP2',.6,['b_a:95:20']), bandpush:A('PUU PUD',.6,['b_back']), bandpress:A('BP1 BP2',.6,['b_feet']), bandsquat:A('BP1 BS2',.7,['b_feet']), banddl:A('DLB DLT',.7,['b_feet']), bandwalk:A('LW1 LW2 LW3 LW2',.4,['b_knees']), bandpallof:A('PP1 PP2',.8,['b_a:3:40']), bandchop:A('WB1 WB2',.6,['b_a:3:6']), bandshadow:A('GU JAB GU CRO GU',.3,['b_a:3:40']),
- bagmix:A('GU JAB GU CRO GU PUU PUD PUU GU JAB GU CRO GU SUD SUU SUD GU JAB GU CRO GU SQT SQB SQT',.3,['bolsa']), wallhs:A('HS1 HS2',1,['pared']), skiband:A('SE1 SEM SE2 SEM',.4,['b_a:96:-10']), jucrk:A('GU JAB GU UPC GU CRO GU KNE GU',.32), jucrkb:A('GU JAB GU UPC GU CRO GU KB1 KB2 GU',.3), escback:A('QF1 QF2 QF1 QF2 LT1 LT2 LT3 LT2',.2,['escalera']), escpunch:A('QF1 QF2 QF1 QF2 GU JAB GU CRO GU',.2,['escalera']),
+ bagmix:A('GU JAB GU CRO GU PUU PUD PUU GU JAB GU CRO GU SUD SUU SUD GU JAB GU CRO GU SQT SQB SQT',.3,['bolsa']), wallhs:A('HS1 HS2',1,['pared']), skiband:A('SE1 SEM SE2 SEM',.4,['b_a:96:-10']), atdefm:A('GU JAB CRO JAB CRO GU BOB GU SLIP GU BOB GU',.3,['rival']), sparhands:A('GU JAB GU BOB GU CRO GU SLIP GU',.32,['rival']), jucrk:A('GU JAB GU UPC GU CRO GU KNE GU',.32), jucrkb:A('GU JAB GU UPC GU CRO GU KB1 KB2 GU',.3), escback:A('QF1 QF2 QF1 QF2 LT1 LT2 LT3 LT2',.2,['escalera']), escpunch:A('QF1 QF2 QF1 QF2 GU JAB GU CRO GU',.2,['escalera']),
  stretch:A('ST STR STR',1.2), quad:A('QST QST2',1.5), armstretch:A('ARMS ARMS2',1.5), breathe:A('ST ARMB',1.6),
 };
 const ANIM_NAMES = Object.keys(ANIM);
@@ -1446,7 +1446,7 @@ S._bm = null; S._bx = []; S._borr = []; S._aj = { items: [], borrados: [] }; S._
 // ejercicios incluidos en el código (llegan a todas las versiones de la app)
 const EX_CODE = [
   { id: 'sombra_tecnica', ovv: 100, n: 'Sombra' },
-  { id: 'guanteo_libre', ovv: 100, n: 'Guanteo', d: 'Guanteo a ritmo controlado con todas las técnicas.' },
+  { id: 'guanteo_libre', ovv: 100, a: 'sparring', n: 'Guanteo', d: 'Guanteo a ritmo controlado con todas las técnicas.' },
   { id: 'soga_basico', ovv: 100, n: 'Soga', d: 'Trabajo libre de soga variando: salto básico, boxer step, trote, rodillas arriba, saltos laterales, a un pie, cruces y dobles.' },
   { id: 'esc_dentro', ovv: 100, a: 'escinout', n: 'Escalera', d: 'Trabajo libre de escalera variando: 2 adentro 2 afuera, rayuela, laterales, alternando los pies, de costado 2 pies adentro y 2 afuera.' },
   { id: 'soga_esquivas', ovv: 100, b: 'cal', p: 'movil', n: 'Cintura con soga elástica', d: 'Soga elástica tensada a la altura de la cabeza: avanzar y retroceder en guardia pasando por debajo con rolling de lado a lado.' },
@@ -1479,8 +1479,9 @@ const EX_CODE = [
   { id: 'tec_jab_upper_cross_rodilla_bici', ovv: 100, b: 'tec', p: 'combo', a: 'jucrkb', nv: 2, on: true, m: [], n: 'Técnica: jab + uppercut + cross + rodilla delantera en bicicleta', d: 'Misma combinación, terminando con rodilla delantera en bicicleta (cambio de pierna en el aire).' },
   { id: 'bolsa_12', ovv: 100, b: 'tec', p: 'golpes', a: 'straights', nv: 1, on: true, m: ['bolsa'], n: 'Bolsa: 1-2', d: 'Jab y cross en la bolsa, volviendo las manos a la cara.' },
   { id: 'bolsa_rodilla_frontal', ovv: 100, b: 'tec', p: 'clinch', a: 'knee', nv: 1, on: true, m: ['bolsa'], n: 'Bolsa: rodillas frontales', d: 'Rodillas rectas a la bolsa con cada pierna.' },
-  { id: 'tec_atdef_manos', ovv: 100, b: 'tec', p: 'defensa', a: 'sparring', nv: 1, on: true, m: [], n: 'Ataque y defensa solo manos', d: 'De a dos, solo golpes de puño: uno ataca y el otro defiende; se cambia a mitad del round.' },
+  { id: 'tec_atdef_manos', ovv: 100, b: 'tec', p: 'defensa', a: 'atdefm', nv: 1, on: true, m: [], n: 'Ataque y defensa solo manos', d: 'De a dos, solo golpes de puño: uno ataca y el otro defiende; se cambia a mitad del round.' },
   { id: 'tec_atdef_piernas', ovv: 100, b: 'tec', p: 'defensa', a: 'sparkick', nv: 1, on: true, m: [], n: 'Ataque y defensa solo piernas', d: 'De a dos, solo patadas y teeps: uno ataca y el otro defiende; se cambia a mitad del round.' },
+  { id: 'guanteo_manos', ovv: 100, a: 'sparhands' },
   { id: 'foco_libre', ovv: 100, a: 'focus12', b: 'tec', p: 'golpes', nv: 1, on: true, m: ['foco'], n: 'Round de foco', d: 'Round completo con foco: el compañero marca y el alumno responde con golpes y combinaciones libres.' },
   { id: 'paos_libre', ovv: 100, a: 'kickcross', b: 'tec', p: 'combo', nv: 1, on: true, m: ['paos'], n: 'Round de paos', d: 'Round completo con paos: golpes, patadas, rodillas y codos a ritmo de pelea.' },
   { id: 'bolsa_libre', ovv: 100, a: 'bagcombo', b: 'tec', p: 'golpes', nv: 1, on: true, m: ['bolsa'], n: 'Round de bolsa', d: 'Round completo en la bolsa a ritmo de pelea: golpes, patadas, rodillas y desplazamientos.' },
