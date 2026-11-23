@@ -173,7 +173,7 @@ const _enc = v => Array.isArray(v) ? v.map(x => Array.isArray(x) ? { __a: _enc(x
 const _dec = v => Array.isArray(v) ? v.map(_dec) : (v && typeof v === 'object') ? (Object.keys(v).length === 1 && '__a' in v ? _dec(v.__a) : Object.fromEntries(Object.entries(v).map(([k, x]) => [k, _dec(x)]))) : v;
 const _snap = s => ({ exists: s.exists, id: s.id, data: () => _dec(s.data()) });
 const _wDoc = r => ({ id: r.id, onSnapshot: (f, e) => r.onSnapshot(s => f(_snap(s)), e), set: (d, o) => r.set(_enc(d), o || {}), update: d => r.update(_enc(d)), delete: () => r.delete(), collection: c => _wCol(r.collection(c)) });
-const _wCol = r => ({ doc: id => _wDoc(r.doc(id)), add: d => r.add(_enc(d)), orderBy: (...a) => _wCol(r.orderBy(...a)), limit: n => _wCol(r.limit(n)), onSnapshot: (f, e) => r.onSnapshot(s => f({ size: s.size, docs: s.docs.map(_snap) }), e) });
+const _wCol = r => ({ doc: id => _wDoc(r.doc(id)), add: d => r.add(_enc(d)), orderBy: (...a) => _wCol(r.orderBy(...a)), limit: n => _wCol(r.limit(n)), onSnapshot: (f, e) => r.onSnapshot(s => f({ size: s.size, docs: s.docs.map(_snap), metadata: { fromCache: s.metadata.fromCache } }), e) });
 const _db = { doc: p => _wDoc(_fdb.doc(p)), collection: p => _wCol(_fdb.collection(p)) };
 function _overlay(html) { let d = document.getElementById('fb-ov'); if (!d) { d = document.createElement('div'); d.id = 'fb-ov'; d.style.cssText = 'position:fixed;inset:0;z-index:9999;background:#111114;color:#eee;display:flex;align-items:center;justify-content:center;padding:20px;font:15px system-ui;text-align:center'; document.body.appendChild(d); } d.innerHTML = html; return d; }
 const _DIF = (() => { try { return new URLSearchParams(location.search).get('dif'); } catch (e) { return null; } })(); // link de clase diferenciada: sin login
@@ -758,8 +758,28 @@ function bloques1a10() { const uso = usoReciente(), N = d10Gente(), ok = e => !e
   const items = E.flatMap(([gr, b1, f1, fk, bb]) => [b1 && { id: b1.id, b: 'tec', f: 'elem', gr }, f1 && { id: f1.id, b: bb, f: fk, gr }].filter(Boolean));
   // hasta el martes 24/11: los ejercicios fijos que indicó el profe; desde el miércoles 25/11 vuelve a variar
   const FIJO = [['Tren superior', 'bolsa_12', 'tec', 'elem'], ['Tren superior', 'flexiones', 'fis', 'sup'], ['Core', 'bolsa_rodilla_frontal', 'tec', 'elem'], ['Core', 'mountain_climbers', 'core', null], ['Piernas', 'bolsa_circulares', 'tec', 'elem'], ['Piernas', 'sent_libre', 'fis', 'inf']];
-  if (new Date() < new Date(2026, 10, 25) && FIJO.every(([, id]) => exById(id))) return [{ b: 'fis', t: '🔟 1 a 10', k: 'esc10', g: 'esc10', cfg: { cap: 600, r: 60 }, items: FIJO.map(([gr, id, b, f]) => ({ id, b, f, gr })) }];
-  return [{ b: 'fis', t: '🔟 1 a 10', k: 'esc10', g: 'esc10', cfg: { cap: 600, r: 60 }, items }]; }
+  if (new Date() < new Date(2026, 10, 25) && FIJO.every(([, id]) => exById(id))) return [{ b: 'fis', t: '🔟 1 a 10', k: 'esc10', g: 'esc10', cfg: { cap: 600, r: 60, vueltas: 2, rv: 60 }, items: FIJO.map(([gr, id, b, f]) => ({ id, b, f, gr })) }];
+  return [{ b: 'fis', t: '🔟 1 a 10', k: 'esc10', g: 'esc10', cfg: { cap: 600, r: 60, vueltas: 2, rv: 60 }, items }]; }
+// clase armada por el profe para el martes 24/11 (se carga una sola vez como clase planificada)
+function sembrarClase24() { try { if (!ES_FB || S.priv || !S.db || !S._planSrv || !S.loaded?.banco || !(S.banco || []).length || new Date() >= new Date(2026, 10, 25) || localStorage.getItem('kb_seed24') || S.sedes === undefined) return;
+  const sd = sedes()[0], h = (sd.horarios || []).find(x => (x.dias || [2, 4]).includes(2)) || (sd.horarios || [])[0]; if (!h) return;
+  const [hh, mi] = (h.hora || '20:00').split(':').map(Number), f = new Date(2026, 10, 24, hh || 20, mi || 0);
+  const ex = id => exById(id); if (!['soga_basico', 'flexiones', 'tec_atdef_manos', 'guanteo_libre', 'paos_libre'].every(ex)) return; localStorage.setItem('kb_seed24', 1); sembrarClase24._k = 1;
+  const I = (ids, extra = {}) => ids.filter(ex).map(id => ({ id, b: ex(id).b, f: null, rounds: 1, ...extra }));
+  const rc = { w: 180, r: 60 }, B = [
+    { b: 'cal', t: 'Movimiento articular', k: 'cont', cfg: { each: 20 }, items: I(['art_cuello', 'art_hombros', 'art_brazos', 'art_munecas', 'art_cintura', 'art_cadera', 'art_rod_pecho', 'art_rod_hombro', 'art_elev_piernas', 'art_rodillas', 'art_tobillos']) },
+    { b: 'cal', t: 'Soga', k: 'cont', f: 'soga', cfg: { each: 180, pa: 30 }, items: I(['soga_basico']) },
+    ...bloques1a10().map(b => ({ ...b, cfg: { ...b.cfg, vueltas: 2, rv: 60, pa: 180 } })),
+    { b: 'calma', t: 'Estiramiento', k: 'cont', cfg: { each: 60 }, items: I(['est_pantorrillas', 'est_isquios', 'est_cuadriceps', 'est_cadera', 'abertura_frontal']) },
+    { b: 'pausa', t: 'Equiparse', k: 'pausa', cfg: { each: 180, pa: 0 }, items: [] },
+    { b: 'tec', t: 'Técnica', k: 'rounds', f: 'tecsin', cfg: { ...rc, pa: 0 }, items: I(['tec_atdef_manos', 'tec_jab_upper_cross_rodilla', 'tec_atdef_piernas', 'tec_jab_upper_cross_rodilla_bici']) },
+    { b: 'tec', t: 'Guanteos', k: 'rounds', f: 'guanteo', cfg: { ...rc }, items: I(['guanteo_libre'], { rounds: 6 }) },
+    { b: 'tec', t: 'Bolsa | Foco & Paos', k: 'rounds', f: 'elem', cfg: { ...rc }, items: I(['paos_libre'], { rounds: 2 }) },
+    { b: 'calma', t: 'Estiramiento final', k: 'cont', f: 'final', cfg: { each: 30 }, items: I(['est_lumbar', 'est_torsion', 'postura_nino', 'respiracion']) }];
+  B.forEach(bl => bl.min = Math.round(durBloque(bl) / 60));
+  const ya = (S.plan || []).find(p => p.sede === sd.id && p.hor === h.id && new Date(p.fecha).toDateString() === f.toDateString()), id = ya?._id || 'p20261124_' + sd.id + '_' + h.id + '_profe';
+  serial(() => S.db.doc('plan/' + id).set(JSON.parse(JSON.stringify({ sede: sd.id, hor: h.id, fecha: f.toISOString(), semana: semanaAct(), carga: 'normal', formato: '', manual: 1, dur: durTotal(B), bloques: B }))));
+  toast('📅 Cargué la clase del martes 24 en Próximas clases planificadas.'); } catch (e) { console.error(e); } }
 function bloques10x10() { return D10G.map(([g, , t], k) => ({ b: g === 'core' ? 'core' : 'fis', t: '⏱ 10 x 10 · ' + t, k: 'circ', f: 'd10', g, cfg: { w: 10, r: 10, vueltas: 1, rv: 10, ...(k ? { pa: 60 } : {}) }, items: d10Items(g, 10) })); }
 // estiramientos ordenados por zona del cuerpo, de la cabeza a los pies
 const ZCUERPO = [/cuello|cabeza/, /hombro|tricep|brazo|antebrazo|muneca|pecho|dorsal/, /espalda|columna|torsion|cobra|abdomin|nino/, /lumbar|cadera|gluteo|mariposa|aductor/, /abertura|isquio|cuadricep|pierna/, /pantorrilla|tobillo|gemelo/];
@@ -846,7 +866,7 @@ function durBloque(bl) { if (bl.k !== 'pausa' && bl.k !== 'circuito' && !bl.item
   const W = it => wIt(bl, it), sw = bl.items.reduce((a, it) => a + W(it), 0);
   if (bl.k === 'cont') return sw + (n - 1) * (c.r || 0);
   if (bl.k === 'pausa') return c.each;
-  if (bl.k === 'esc10') return 3 * Math.round(c.cap * .6) + 2 * (c.r || 0);
+  if (bl.k === 'esc10') return (c.vueltas || 1) * 3 * 200 + ((c.vueltas || 1) - 1) * (c.rv ?? 60);
   if (bl.k === 'circuito') { if (bl.parejas?.length) return (c.rondas || 1) * Math.max(...bl.parejas.map(p => p.length)) * c.w; const n = 2 * (c.rondas || 1); return n * c.w + (n - 1) * c.r; }
   if (bl.k === 'rounds') return bl.items.reduce((a, it) => a + (it.rounds || 1) * (W(it) + c.r), 0);
   return c.vueltas * (sw + n * c.r) + (c.vueltas - 1) * (c.rv ?? PAUSA());
@@ -866,6 +886,13 @@ function bloquesBase() { const P = params(semanaAct()), rc = { w: P.rw, r: P.rr 
 const mmssC = t => { t = Math.round(t); return Math.floor(t / 60) + "'" + String(t % 60).padStart(2, '0') + '"'; };
 function tiemposHtml(T) { if (!T || !Object.keys(T).length) return ''; const L = Object.entries(T).map(([a, v]) => [a, v.filter(x => x != null)]).filter(x => x[1].length).sort((x, y) => Math.min(...x[1]) - Math.min(...y[1]));
   return `<div class="note" style="text-align:center">⏱ ${L.map(([a, v], i) => `${i === 0 ? '🥇 ' : ''}<b>${esc(a)}</b> ${v.map(mmssC).join(' / ')}`).join(' · ')}</div>`; }
+// circuito individual (1 a 10): quiénes lo hacen; cada uno tiene su cronómetro
+function elegirPersonas(bi, alListo) { const bl = S.draft.bloques[bi], d = S.draft, todos = (S.alumnos || []).filter(a => alEnGrupo(a) || (d.presentes || []).includes(a)), ya = (bl.parejas || []).flat();
+  const sel = new Set(ya.length ? ya : (d.presentes?.length ? d.presentes : todos.filter(a => !esProfe(a))));
+  const m = modal(`<h3 style="margin-top:0">👤 ¿Quiénes hacen ${esc(titulo(bl))}?</h3><div class="note" style="padding-top:0">Cada uno tiene su cronómetro y toca ✓ al terminar cada vuelta.</div><div id="ep-al" style="display:flex;flex-wrap:wrap;gap:6px;margin:6px 0">${todos.map(a => `<label class="pill"><input type="checkbox" value="${esc(a)}" ${sel.has(a) ? 'checked' : ''}>${esc(a)}</label>`).join('')}</div>
+    <div class="row" style="justify-content:flex-end"><button class="btn" id="ep-x">Cancelar</button><button class="btn pri" id="ep-ok">▶ Empezar</button></div>`);
+  m.querySelector('#ep-x').onclick = () => m.remove();
+  m.querySelector('#ep-ok').onclick = () => { const L = [...m.querySelectorAll('#ep-al input:checked')].map(x => x.value); if (!L.length) { toast('Marcá al menos un alumno.'); return; } bl.parejas = L.map(a => [a]); m.remove(); saveDraftLocal(); render(); alListo(); }; }
 function editarParejas(bi, alListo) { const bl = S.draft.bloques[bi], d = S.draft;
   const todos = (S.alumnos || []).filter(a => alEnGrupo(a) || (d.presentes || []).includes(a)), sel = new Set(d.presentes?.length ? d.presentes : (bl.parejas || []).flat().length ? (bl.parejas || []).flat() : todos);
   let P = JSON.parse(JSON.stringify(bl.parejas || []));
@@ -987,7 +1014,7 @@ function cfgEdit(bl, bi) {
   const c = bl.cfg;
   const stp = (k, txt, lab) => `<div class="stp"><small>${lab}</small><div><button data-step="${bi},${k},-1" aria-label="Menos">−</button><span>${txt}</span><button data-step="${bi},${k},1" aria-label="Más">+</button></div></div>`;
   if (bl.k === 'pausa') return `<div class="cfgbar">${stp('each', fmtC(c.each), 'Duración')}</div>`;
-  if (bl.k === 'esc10') return `<div class="cfgbar">${stp('cap', fmtC(c.cap), 'Tope por estación')}${stp('r', fmt0(c.r), 'Entre estaciones')}</div><div class="note" style="text-align:center">En cada estación: bolsa x 1 + físico x 1, después x 2… hasta x 10. El timer cuenta cuánto tardan.</div>`;
+  if (bl.k === 'esc10') return `<div class="cfgbar">${stp('vueltas', String(c.vueltas || 1), 'Vueltas')}${stp('rv', fmt0(c.rv ?? 60), 'Desc. vueltas')}</div><div class="note" style="text-align:center">En cada estación: bolsa x 1 + físico x 1, después x 2… hasta x 10. Cada alumno tiene su cronómetro y toca ✓ al terminar la vuelta.</div>`;
   if (bl.k === 'circuito') return `<div class="cfgbar">${stp('w', fmtC(c.w), 'Tiempo máx.')}${stp('r', fmt0(c.r), 'Cambio')}${stp('rondas', String(c.rondas || 1), 'Rondas')}</div><div class="note" style="text-align:center">Uno hace el circuito y el compañero lo asiste; después cambian.</div><div class="row" style="justify-content:center;align-items:center;gap:8px;margin:6px 0"><button class="btn sm" data-par="${bi}">👥 ${bl.parejas?.length ? 'Cambiar parejas' : 'Armar parejas'}</button></div>`;
   const pa = '', cb = `<div class="cfgbar${bl.items.length > 1 ? ' ind' : ''}">`;
   if (bl.k === 'cont') return `${cb}${stp('each', fmtC(c.each), 'Trabajo')}${stp('r', fmt0(c.r || 0), 'Descanso')}${pa}</div>`;
@@ -1005,7 +1032,7 @@ function pasoCfg(bi, k, dir) {
 }
 function cfgTxt(bl) {
   const c = bl.cfg;
-  if (bl.k === 'esc10') return `Escalera de 1 a 10 · 3 estaciones (bolsa + físico) · cronómetro, tope ${fmt(c.cap)} c/u`;
+  if (bl.k === 'esc10') return `Escalera de 1 a 10 · 3 estaciones (bolsa + físico) · ${c.vueltas || 1} vuelta${(c.vueltas || 1) > 1 ? 's' : ''} · cronómetro por alumno`;
   if (bl.k === 'circuito') return `En parejas · ${c.rondas || 1} ${(c.rondas || 1) > 1 ? 'rondas' : 'ronda'} · hasta ${fmt(c.w)} cada uno · ${fmt(c.r)} para cambiar`;
   if (bl.k === 'pausa') return bl.f === 'prep' ? `${fmt(c.each)} para prepararse` : `${fmt(c.each)} para ponerse vendas y guantes`;
   if (bl.k === 'cont' || (!bl.k && (bl.b === 'cal' || bl.b === 'calma'))) return `${fmt(c.each)} cada ejercicio (${bl.items.length} ejercicios)`;
@@ -1404,6 +1431,7 @@ function render() {
   try { $('#b-grupo').textContent = '📍 ' + grupoTxt(sedeAct(), horAct()) + ' ▾'; } catch (e) {}
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.t === S.tab));
   if (S.difMode) { $('#main').innerHTML = vDif(); hookAnims($('#main')); return; }
+  if (!sembrarClase24._k) sembrarClase24();
   $('#main').innerHTML = { clase: vClase, timer: vTimer, hist: vHist, banco: vBanco, mat: vMat, alum: vAlum }[S.tab]();
   hookAnims($('#main'));
 }
@@ -1447,10 +1475,12 @@ const EX_CODE = [
   { id: 'iso_banda_remo', ovv: 100, b: 'fis', p: 'trac', a: 'bandrow', nv: 2, on: true, iso: true, hp: 1, m: ['bandas'], n: 'Remo isométrico con banda', d: 'Banda atada adelante: tirar con los codos atrás y sostener esa posición.' },
   { id: 'iso_plancha_disco', ovv: 100, b: 'core', p: 'core', a: 'plank', nv: 2, on: true, iso: true, hp: 0, m: ['discos'], n: 'Plancha con disco en la espalda', d: 'Plancha en antebrazos con un disco apoyado en la espalda alta; sostener sin arquear.' },
   { id: 'iso_hollow_disco', ovv: 100, b: 'core', p: 'core', a: 'hollowp', nv: 2, on: true, iso: true, hp: 0, m: ['discos'], n: 'Hollow sostenido con disco', d: 'Boca arriba en posición hollow, disco en las manos con brazos estirados atrás; sostener.' },
-  { id: 'tec_jab_upper_cross_rodilla', ovv: 100, b: 'tec', p: 'combo', a: 'jucrk', nv: 1, on: true, m: [], n: 'Técnica: jab + uppercut + cross de izquierda + rodilla de atrás', d: 'Combinación de jab, uppercut, cross de izquierda y rodilla con la pierna de atrás, volviendo a guardia.' },
-  { id: 'tec_jab_upper_cross_rodilla_bici', ovv: 100, b: 'tec', p: 'combo', a: 'jucrkb', nv: 2, on: true, m: [], n: 'Técnica: jab + uppercut + cross de izquierda + rodilla en bicicleta', d: 'Misma combinación, terminando con rodilla de atrás en bicicleta (cambio de pierna en el aire).' },
+  { id: 'tec_jab_upper_cross_rodilla', ovv: 100, b: 'tec', p: 'combo', a: 'jucrk', nv: 1, on: true, m: [], n: 'Técnica: jab + uppercut + cross + rodilla de atrás', d: 'Combinación de jab, uppercut, cross y rodilla con la pierna de atrás, volviendo a guardia.' },
+  { id: 'tec_jab_upper_cross_rodilla_bici', ovv: 100, b: 'tec', p: 'combo', a: 'jucrkb', nv: 2, on: true, m: [], n: 'Técnica: jab + uppercut + cross + rodilla delantera en bicicleta', d: 'Misma combinación, terminando con rodilla delantera en bicicleta (cambio de pierna en el aire).' },
   { id: 'bolsa_12', ovv: 100, b: 'tec', p: 'golpes', a: 'straights', nv: 1, on: true, m: ['bolsa'], n: 'Bolsa: 1-2', d: 'Jab y cross en la bolsa, volviendo las manos a la cara.' },
   { id: 'bolsa_rodilla_frontal', ovv: 100, b: 'tec', p: 'clinch', a: 'knee', nv: 1, on: true, m: ['bolsa'], n: 'Bolsa: rodillas frontales', d: 'Rodillas rectas a la bolsa con cada pierna.' },
+  { id: 'tec_atdef_manos', ovv: 100, b: 'tec', p: 'defensa', a: 'sparring', nv: 1, on: true, m: [], n: 'Ataque y defensa solo manos', d: 'De a dos, solo golpes de puño: uno ataca y el otro defiende; se cambia a mitad del round.' },
+  { id: 'tec_atdef_piernas', ovv: 100, b: 'tec', p: 'defensa', a: 'sparkick', nv: 1, on: true, m: [], n: 'Ataque y defensa solo piernas', d: 'De a dos, solo patadas y teeps: uno ataca y el otro defiende; se cambia a mitad del round.' },
   { id: 'foco_libre', ovv: 100, a: 'focus12', b: 'tec', p: 'golpes', nv: 1, on: true, m: ['foco'], n: 'Round de foco', d: 'Round completo con foco: el compañero marca y el alumno responde con golpes y combinaciones libres.' },
   { id: 'paos_libre', ovv: 100, a: 'kickcross', b: 'tec', p: 'combo', nv: 1, on: true, m: ['paos'], n: 'Round de paos', d: 'Round completo con paos: golpes, patadas, rodillas y codos a ritmo de pelea.' },
   { id: 'bolsa_libre', ovv: 100, a: 'bagcombo', b: 'tec', p: 'golpes', nv: 1, on: true, m: ['bolsa'], n: 'Round de bolsa', d: 'Round completo en la bolsa a ritmo de pelea: golpes, patadas, rodillas y desplazamientos.' },
@@ -1549,7 +1579,8 @@ function editar(id) {
     m.remove(); guardarEj(ne);
   };
 }
-function iniciarClase(ok) { const ci = S.draft.bloques.findIndex(x => x.k === 'circuito'); if (ci >= 0 && !ok) { editarParejas(ci, () => iniciarClase(1)); return; } // siempre confirmar las parejas antes de arrancar
+function iniciarClase(ok) { const ci = S.draft.bloques.findIndex(x => x.k === 'circuito'); if (ci >= 0 && !ok) { editarParejas(ci, () => iniciarClase(1)); return; }
+  const ei = S.draft.bloques.findIndex(x => x.k === 'esc10'); if (ei >= 0 && ok !== 2) { elegirPersonas(ei, () => iniciarClase(2)); return; } // siempre confirmar las parejas antes de arrancar
   abrirLive(timeline(S.draft), 'Clase', `${FORMATOS[S.draft.formato] || ''} · Carga ${(CARGAS[S.draft.carga] || 'Normal').toLowerCase()}`, true); }
 function editarPlan(p) { S.edPlan = { prev: S.draft }; S.draft = JSON.parse(JSON.stringify({ ...p, _id: null, _saved: false, _plan: p._id })); delete S.draft._id; S.draft.bloques.forEach(bl => bl.min = Math.round(durBloque(bl) / 60)); S.draft.dur = durTotal(S.draft.bloques); S.tab = 'clase'; render(); window.scrollTo(0, 0); }
 // ===== clase diferenciada: copia de una clase planificada para un alumno, con link que abre el timer =====
@@ -1731,6 +1762,8 @@ function timeline(d) {
     const nxB = d.bloques[bix + 1]; const paB = paDe(bl); if (bix > 0 && paB > 0) T.push({ f: 'rest', s: paB, n: 'Pausa · prepararse para ' + titulo(bl), blk: titulo(bl), keep: 1 });
     const B = titulo(bl), c = bl.cfg, k = bl.k || (bl.b === 'tec' ? 'rounds' : (bl.b === 'cal' || bl.b === 'calma') ? 'cont' : 'circ');
     if (k === 'pausa') { T.push({ f: 'rest', s: c.each, n: B, blk: B, keep: 1 }); return; }
+    if (k === 'esc10' && bl.parejas?.length) { const R = c.vueltas || 1, G = []; bl.items.forEach(it => { const e = exById(it.id); if (!e) return; const g = it.gr || ''; let x = G.find(z => z.g === g); if (!x) G.push(x = { g, n: [] }); x.n.push(e.n.replace(/^Bolsa: /, 'Bolsa ')); });
+      T.push({ f: 'work', s: R * 3 * 300, n: B, a: null, m: [], pares: bl.parejas, rondas: R, blk: B, sub: '', esc: '🔟 De 1 a 10 · ' + G.map(x => `<b>${esc(x.g)}:</b> ${esc(x.n.join(' + '))}`).join(' · ') + (R > 1 ? ` · ${R} vueltas (máx. ${fmt(c.rv ?? 60)} de descanso entre vueltas)` : '') }); return; }
     if (k === 'esc10') { const G = []; bl.items.forEach(it => { const g = it.gr || ''; let x = G.find(z => z.g === g); if (!x) G.push(x = { g, it: [] }); x.it.push(it); });
       G.forEach((x, gi) => { const es = x.it.map(i => exById(i.id)).filter(Boolean); if (!es.length) return; T.push({ f: 'work', s: c.cap, crono: 1, n: es.map(e => e.n).join(' + '), a: es[es.length - 1].a, m: [], blk: B, sub: `${x.g} · de 1 a 10`, say: `${x.g}. ${es.map(e => e.n).join(' más ')}. De uno a diez.` }); if (gi < G.length - 1 && c.r) T.push({ f: 'rest', s: c.r, n: 'Cambio de estación', blk: B }); }); return; }
     if (k === 'circuito' && bl.parejas?.length) { const e = exById(bl.items[0]?.id); if (!e) return; const R = c.rondas || 1, mx = Math.max(...bl.parejas.map(p => p.length));
@@ -1826,14 +1859,14 @@ function iniciarSeg() {
 }
 function pintarPar(full) { const s = live.segs[live.i]; if (!s?.pares) return; const el = s.s - live.left, n = s.pares.length;
   if (full) { const col = n <= 1 ? 1 : n <= 4 ? 2 : 3; $('#lv-par').style.gridTemplateColumns = `repeat(${col},1fr)`;
-    $('#lv-par').innerHTML = s.pares.map((p, k) => `<div class="pp" data-pp="${k}"><div class="pp-r"></div><div class="pp-n"></div><div class="pp-t"></div><div class="pp-a"></div><div class="pp-b"><button class="pp-ok" data-ppok="${k}">✓ Terminó</button><button class="pp-un" data-ppun="${k}" title="Deshacer">↶</button></div><div class="pp-h"></div></div>`).join(''); }
+    $('#lv-par').innerHTML = (s.esc ? `<div style="grid-column:1/-1;font:600 13px system-ui;line-height:1.35;background:#0004;border-radius:10px;padding:6px 8px">${s.esc}</div>` : '') + s.pares.map((p, k) => `<div class="pp" data-pp="${k}"><div class="pp-r"></div><div class="pp-n"></div><div class="pp-t"></div><div class="pp-a"></div><div class="pp-b"><button class="pp-ok" data-ppok="${k}">✓ Terminó</button><button class="pp-un" data-ppun="${k}" title="Deshacer">↶</button></div><div class="pp-h"></div></div>`).join(''); }
   const T = (S.draft && (S.draft.tiempos ||= {})) || {};
-  live.pst.forEach((st, k) => { const box = $('#lv-par').children[k]; if (!box) return; const cur = st.q[st.i], fin = !cur;
+  live.pst.forEach((st, k) => { const box = $('#lv-par').children[k + (s.esc ? 1 : 0)]; if (!box) return; const cur = st.q[st.i], fin = !cur;
     box.classList.toggle('fin', fin);
-    box.querySelector('.pp-r').textContent = `Pareja ${k + 1}` + (fin ? ' · ¡Terminaron!' : s.rondas > 1 ? ` · Ronda ${cur.r + 1} de ${s.rondas}` : '');
+    const solo = s.pares[k].length === 1, Rl = s.esc ? 'Vuelta' : 'Ronda'; box.querySelector('.pp-r').textContent = (solo ? '' : `Pareja ${k + 1}`) + (fin ? (solo ? '¡Terminó!' : ' · ¡Terminaron!') : s.rondas > 1 ? `${solo ? '' : ' · '}${Rl} ${cur.r + 1} de ${s.rondas}` : '');
     box.querySelector('.pp-n').textContent = fin ? s.pares[k].join(' – ') : cur.a;
     box.querySelector('.pp-t').textContent = fin ? '' : mmss(el - st.t0);
-    box.querySelector('.pp-a').textContent = fin ? '' : 'asiste: ' + s.pares[k].filter(x => x !== cur.a).join(', ');
+    box.querySelector('.pp-a').textContent = fin || solo ? '' : 'asiste: ' + s.pares[k].filter(x => x !== cur.a).join(', ');
     box.querySelector('.pp-ok').style.display = fin ? 'none' : ''; box.querySelector('.pp-un').style.visibility = st.i ? '' : 'hidden';
     box.querySelector('.pp-h').innerHTML = st.q.slice(0, st.i).map(x => `${esc(x.a)} ${mmssC((T[x.a] || [])[x.r] || 0)}`).join(' · '); }); }
 function marcarPar(k, des) { const s = live.segs[live.i]; if (!s?.pares || !S.draft) return; const st = live.pst[k], el = s.s - live.left, T = S.draft.tiempos ||= {};
@@ -1936,7 +1969,7 @@ render();
   db.collection('extras').onSnapshot(s => { S._ex = s.docs.map(d => d.data()); combinarBanco(); render(); }, err);
   db.doc('banco/ajustes').onSnapshot(s => { S._aj = s.exists ? s.data() : { items: [], borrados: [] }; combinarBanco(); render(); }, err);
   db.doc('banco/extra').onSnapshot(s => { S._bx = s.exists ? (s.data().items || []) : []; combinarBanco(); render(); }, err);
-  db.collection('plan').onSnapshot(s => { const hoy = new Date(); hoy.setHours(0, 0, 0, 0); S.plan = s.docs.map(d => ({ ...d.data(), _id: d.id })).filter(p => new Date(p.fecha) >= hoy).sort((x, y) => x.fecha.localeCompare(y.fecha)); render(); }, err);
+  db.collection('plan').onSnapshot(s => { const hoy = new Date(); hoy.setHours(0, 0, 0, 0); S.plan = s.docs.map(d => ({ ...d.data(), _id: d.id })).filter(p => new Date(p.fecha) >= hoy).sort((x, y) => x.fecha.localeCompare(y.fecha)); if (!s.metadata?.fromCache) S._planSrv = 1; render(); }, err);
   db.doc(S.priv ? P_('alumnos') : 'config/alumnos').onSnapshot(s => { S.alumnos = s.exists ? [...(s.data().lista || [])] : []; S.alDatos = s.exists ? JSON.parse(JSON.stringify(s.data().datos || {})) : {}; render(); }, err);
   db.doc(S.priv ? P_('evitar') : 'config/evitar').onSnapshot(s => { if (s.exists) { const d = s.data(); S.evitar = { zonas: [...(d.zonas || [])], grupos: [...(d.grupos || [])], ids: [...(d.ids || [])] }; } render(); }, err);
   const setMats = () => { const src = S._matsUser || S._matsShared || []; S.mats = src.map(x => ({ ...x })); S.loaded.mats = true;
