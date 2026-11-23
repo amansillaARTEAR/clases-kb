@@ -1773,7 +1773,7 @@ function timeline(d) {
     const items = bl.items.map(it => ({ it, e: exById(it.id) })).filter(x => x.e); if (!items.length) return;
     if (k === 'cont') items.forEach(({ e, it }, ix) => { T.push({ f: 'work', s: wIt(bl, it), n: e.n, a: e.a, m: e.m || [], h: e.iso ? (e.hp ?? 1) + 1 : 0, blk: B, sub: fmt(c.each) }); if (c.r > 0 && ix < items.length - 1) T.push({ f: 'rest', s: c.r, n: 'Pausa', blk: B }); });
     else if (k === 'rounds') { const tot = items.reduce((a, x) => a + (x.it.rounds || 1), 0); let i = 0;
-      items.forEach(({ e, it }) => { for (let r = 1; r <= (it.rounds || 1); r++) { i++; T.push({ f: 'work', s: wIt(bl, it), n: e.n, a: e.a, m: e.m || [], h: e.iso ? (e.hp ?? 1) + 1 : 0, blk: B, sub: `Round ${i} de ${tot}`, inter: e.id === 'bolsa_intercalada', combo: bl.f === 'guanteo' ? null : ((e.m || []).includes('foco') ? 'manos' : 'todo') }); T.push({ f: 'rest', s: c.r, n: 'Descanso', blk: B }); } }); }
+      items.forEach(({ e, it }) => { for (let r = 1; r <= (it.rounds || 1); r++) { i++; T.push({ f: 'work', s: wIt(bl, it), n: e.n, a: e.a, m: e.m || [], h: e.iso ? (e.hp ?? 1) + 1 : 0, blk: B, sub: `Round ${i} de ${tot}`, inter: e.id === 'bolsa_intercalada', combo: bl.f === 'guanteo' || /^Ataque y defensa/.test(e.n) ? null : /^Técnica: /.test(e.n) ? 'fijo:' + e.n.replace(/^Técnica: /, '').replace(/ \+ /g, ', ') : ((e.m || []).includes('foco') ? 'manos' : 'todo') }); T.push({ f: 'rest', s: c.r, n: 'Descanso', blk: B }); } }); }
     else for (let v = 1; v <= c.vueltas; v++) { items.forEach(({ e, it }) => { T.push({ f: 'work', s: wIt(bl, it), n: e.n + (pesoSug(e, d.carga, 1) ? ` · ${pesoSug(e, d.carga, 1)}` : ''), a: e.a, m: e.m || [], h: e.iso ? (e.hp ?? 1) + 1 : 0, blk: B, sub: `Vuelta ${v} de ${c.vueltas}` }); T.push({ f: 'rest', s: c.r, n: 'Pausa', blk: B }); }); if (v < c.vueltas) T.push({ f: 'rest', s: c.rv ?? PAUSA(), n: 'Descanso entre vueltas', blk: B, keep: 1 }); }
   });
   // une descansos consecutivos y saca el último descanso de cada bloque antes de cambiar
@@ -1787,7 +1787,7 @@ const GOLPES = ['jab', 'cross', 'gancho', 'uppercut', 'doble jab', 'gancho al cu
 const PIERNAS = ['low kick', 'patada media', 'patada alta', 'teep', 'rodilla', 'codo', 'switch kick'];
 const DEF = ['esquiva', 'chequeo', 'salida lateral', 'bloqueo'];
 const INTER_EJ = ['Flexiones', 'Abdominales', 'Sentadillas', 'Burpees'];
-function combo(tipo) {
+function combo(tipo) { if (String(tipo).startsWith('fijo:')) return tipo.slice(5); // técnica puntual: se repite la misma combinación
   const n = 2 + Math.floor(Math.random() * 3), out = [];
   for (let i = 0; i < n; i++) {
     const r = Math.random();
