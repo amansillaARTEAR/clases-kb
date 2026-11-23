@@ -743,10 +743,18 @@ function bloquesIso() { const N = d10Gente(), uso = usoReciente(), ok = e => (e.
   const it = [...F.map(e => ({ id: e.id, b: 'fis', f: null })), ...C.map(e => ({ id: e.id, b: 'core', f: null }))];
   return [{ b: 'fis', t: '🧱 Isométrico con materiales', k: 'circ', g: 'iso', cfg: { w: 40, r: 20, vueltas: 2 }, items: it }]; }
 // subtítulos de grupo muscular dentro del bloque 3 x 4 (no son bloques)
-const grpDe = it => !it ? '' : it.b === 'core' ? 'Core' : it.f === 'inf' ? 'Tren inferior' : it.f === 'sup' ? 'Tren superior' : '';
-const subGrp = (bl, ii) => { if (bl.g !== 'grp') return ''; const g = grpDe(bl.items[ii]); return g && g !== grpDe(bl.items[ii - 1]) ? `<div style="font:700 12px system-ui;color:#f4c430;text-transform:uppercase;letter-spacing:.5px;margin:10px 0 4px">${g}</div>` : ''; };
+const grpDe = it => !it ? '' : it.gr ? it.gr : it.b === 'core' ? 'Core' : it.f === 'inf' ? 'Tren inferior' : it.f === 'sup' ? 'Tren superior' : '';
+const subGrp = (bl, ii) => { if (bl.g !== 'grp' && bl.g !== 'esc10') return ''; const g = grpDe(bl.items[ii]); return g && g !== grpDe(bl.items[ii - 1]) ? `<div style="font:700 12px system-ui;color:#f4c430;text-transform:uppercase;letter-spacing:.5px;margin:10px 0 4px">${g}</div>` : ''; };
 // materiales que usan los ejercicios de los bloques de circuito (físico y core)
 function matsCircuito(d) { const out = []; (d.bloques || []).filter(b => (b.b === 'fis' || b.b === 'core') && b.k !== 'pausa').forEach(b => b.items.forEach(it => { const e = exById(it.id); (e?.m || []).forEach(m => { if (!out.includes(m)) out.push(m); }); (e?.est || []).forEach(x => (x.m || []).forEach(m => { if (!out.includes(m)) out.push(m); })); })); return out; }
+// 1 a 10: 3 estaciones (tren superior, core, piernas), cada una con un ejercicio de bolsa + uno físico, de 1 a 10 repeticiones
+function bloques1a10() { const uso = usoReciente(), N = d10Gente(), ok = e => !e.iso && !/^(plancha|plancha_lateral|hollow|superman|lsit|tuck_sit|iso_|dragon|barquito$)/.test(e.id) && (e.m || []).every(m => m === 'bolsa' || cantMat(m) >= N), fresco = L => [...L.filter(e => !(e.id in uso)).sort(() => Math.random() - .5), ...L.filter(e => e.id in uso).sort(() => Math.random() - .5)][0];
+  const bol = re => fresco(candidatos('tec', new Set(), 'elem').filter(e => (e.m || []).includes('bolsa') && !/libre|intercalad/.test(e.id) && re.test(NRM(e.n + ' ' + (e.d || ''))))) || fresco(candidatos('tec', new Set(), 'elem').filter(e => (e.m || []).includes('bolsa') && !/libre|intercalad/.test(e.id)));
+  const E = [['Tren superior', bol(/golpe|recto|gancho|1-2|jab|cross|upper/), fresco(candidatos('fis', new Set(), 'sup').filter(e => ok(e) && !(e.m || []).length)), 'sup', 'fis'],
+    ['Core', bol(/rodilla|clinch/), fresco(candidatos('core', new Set()).filter(e => ok(e) && !(e.m || []).length)), null, 'core'],
+    ['Piernas', bol(/patada|low|circular|kick/), fresco(candidatos('fis', new Set(), 'inf').filter(e => ok(e) && !(e.m || []).length)), 'inf', 'fis']];
+  const items = E.flatMap(([gr, b1, f1, fk, bb]) => [b1 && { id: b1.id, b: 'tec', f: 'elem', gr }, f1 && { id: f1.id, b: bb, f: fk, gr }].filter(Boolean));
+  return [{ b: 'fis', t: '🔟 1 a 10', k: 'esc10', g: 'esc10', cfg: { cap: 600, r: 60 }, items }]; }
 function bloques10x10() { return D10G.map(([g, , t], k) => ({ b: g === 'core' ? 'core' : 'fis', t: '⏱ 10 x 10 · ' + t, k: 'circ', f: 'd10', g, cfg: { w: 10, r: 10, vueltas: 1, rv: 10, ...(k ? { pa: 60 } : {}) }, items: d10Items(g, 10) })); }
 // estiramientos ordenados por zona del cuerpo, de la cabeza a los pies
 const ZCUERPO = [/cuello|cabeza/, /hombro|tricep|brazo|antebrazo|muneca|pecho|dorsal/, /espalda|columna|torsion|cobra|abdomin|nino/, /lumbar|cadera|gluteo|mariposa|aductor/, /abertura|isquio|cuadricep|pierna/, /pantorrilla|tobillo|gemelo/];
@@ -833,6 +841,7 @@ function durBloque(bl) { if (bl.k !== 'pausa' && bl.k !== 'circuito' && !bl.item
   const W = it => wIt(bl, it), sw = bl.items.reduce((a, it) => a + W(it), 0);
   if (bl.k === 'cont') return sw + (n - 1) * (c.r || 0);
   if (bl.k === 'pausa') return c.each;
+  if (bl.k === 'esc10') return 3 * Math.round(c.cap * .6) + 2 * (c.r || 0);
   if (bl.k === 'circuito') { if (bl.parejas?.length) return (c.rondas || 1) * Math.max(...bl.parejas.map(p => p.length)) * c.w; const n = 2 * (c.rondas || 1); return n * c.w + (n - 1) * c.r; }
   if (bl.k === 'rounds') return bl.items.reduce((a, it) => a + (it.rounds || 1) * (W(it) + c.r), 0);
   return c.vueltas * (sw + n * c.r) + (c.vueltas - 1) * (c.rv ?? PAUSA());
@@ -973,6 +982,7 @@ function cfgEdit(bl, bi) {
   const c = bl.cfg;
   const stp = (k, txt, lab) => `<div class="stp"><small>${lab}</small><div><button data-step="${bi},${k},-1" aria-label="Menos">−</button><span>${txt}</span><button data-step="${bi},${k},1" aria-label="Más">+</button></div></div>`;
   if (bl.k === 'pausa') return `<div class="cfgbar">${stp('each', fmtC(c.each), 'Duración')}</div>`;
+  if (bl.k === 'esc10') return `<div class="cfgbar">${stp('cap', fmtC(c.cap), 'Tope por estación')}${stp('r', fmt0(c.r), 'Entre estaciones')}</div><div class="note" style="text-align:center">En cada estación: bolsa x 1 + físico x 1, después x 2… hasta x 10. El timer cuenta cuánto tardan.</div>`;
   if (bl.k === 'circuito') return `<div class="cfgbar">${stp('w', fmtC(c.w), 'Tiempo máx.')}${stp('r', fmt0(c.r), 'Cambio')}${stp('rondas', String(c.rondas || 1), 'Rondas')}</div><div class="note" style="text-align:center">Uno hace el circuito y el compañero lo asiste; después cambian.</div><div class="row" style="justify-content:center;align-items:center;gap:8px;margin:6px 0"><button class="btn sm" data-par="${bi}">👥 ${bl.parejas?.length ? 'Cambiar parejas' : 'Armar parejas'}</button></div>`;
   const pa = '', cb = `<div class="cfgbar${bl.items.length > 1 ? ' ind' : ''}">`;
   if (bl.k === 'cont') return `${cb}${stp('each', fmtC(c.each), 'Trabajo')}${stp('r', fmt0(c.r || 0), 'Descanso')}${pa}</div>`;
@@ -982,7 +992,7 @@ function cfgEdit(bl, bi) {
 const PASOS = { each: 15, w: 5, r: 5, vueltas: 1 };
 function pasoCfg(bi, k, dir) {
   const bl = S.draft.bloques[bi]; let paso = PASOS[k] || 5;
-  paso = k === 'vueltas' ? 1 : 5;
+  paso = k === 'vueltas' ? 1 : k === 'cap' ? 60 : 5;
   if (k === 'rondas') { bl.cfg = { ...bl.cfg, rondas: Math.min(4, Math.max(1, (bl.cfg.rondas || 1) + dir)) }; recalcular(); return; }
   const min = k === 'vueltas' ? 1 : ['r', 'rv', 'pa'].includes(k) ? 0 : paso;
   const cur = k === 'pa' ? paDe(bl) : bl.cfg[k] ?? (k === 'rv' ? PAUSA() : 0);
@@ -990,6 +1000,7 @@ function pasoCfg(bi, k, dir) {
 }
 function cfgTxt(bl) {
   const c = bl.cfg;
+  if (bl.k === 'esc10') return `Escalera de 1 a 10 · 3 estaciones (bolsa + físico) · cronómetro, tope ${fmt(c.cap)} c/u`;
   if (bl.k === 'circuito') return `En parejas · ${c.rondas || 1} ${(c.rondas || 1) > 1 ? 'rondas' : 'ronda'} · hasta ${fmt(c.w)} cada uno · ${fmt(c.r)} para cambiar`;
   if (bl.k === 'pausa') return bl.f === 'prep' ? `${fmt(c.each)} para prepararse` : `${fmt(c.each)} para ponerse vendas y guantes`;
   if (bl.k === 'cont' || (!bl.k && (bl.b === 'cal' || bl.b === 'calma'))) return `${fmt(c.each)} cada ejercicio (${bl.items.length} ejercicios)`;
@@ -997,7 +1008,7 @@ function cfgTxt(bl) {
   return `${fmt(c.w)} trabajo / ${fmt(c.r)} descanso · ${c.vueltas} vueltas`;
 }
 const wIt = (bl, it) => it.w ?? (bl.k === 'cont' || (bl.cfg.each && !bl.cfg.w) ? bl.cfg.each : bl.cfg.w);
-function dosis(bl, it) { const c = bl.cfg; if (bl.k === 'circuito') return `${c.rondas || 1} × ${fmtC(c.w)} c/u`; if (bl.k === 'rounds' || (!bl.k && bl.b === 'tec')) { const r = it.rounds || 1; return `${r} × ${fmtC(wIt(bl, it))}`; } if (c.each) return fmtC(wIt(bl, it)); return `${fmtC(wIt(bl, it))} × ${c.vueltas}`; }
+function dosis(bl, it) { const c = bl.cfg; if (bl.k === 'esc10') return '1 → 10'; if (bl.k === 'circuito') return `${c.rondas || 1} × ${fmtC(c.w)} c/u`; if (bl.k === 'rounds' || (!bl.k && bl.b === 'tec')) { const r = it.rounds || 1; return `${r} × ${fmtC(wIt(bl, it))}`; } if (c.each) return fmtC(wIt(bl, it)); return `${fmtC(wIt(bl, it))} × ${c.vueltas}`; }
 
 /* ================= RENDER ================= */
 const videoUrl = e => e.v || 'https://www.youtube.com/results?search_query=' + encodeURIComponent(e.n.replace(/^[^:]+:\s*/, m => /paos|foco|bolsa|soga|escalera|conos|aros|aro/i.test(m) ? m.replace(':', '') : '') + ' ejercicio');
@@ -1151,6 +1162,7 @@ function vClase() {
         return R(`<button class="btn sm" id="b-addgrp" ${yaG ? 'disabled' : ''} style="justify-self:start;white-space:nowrap;padding:3px 9px;font-size:12px;min-height:0;line-height:1.2">💪 3 x 4${yaG ? ' ✓' : ''}</button>`, '12 ejercicios (4 tren sup., 4 tren inf., 4 core) de 20" / 5"; 3 vueltas con 1\' entre vueltas.')
         + R(`<button class="btn sm" id="b-add10" ${ya10 ? 'disabled' : ''} style="justify-self:start;white-space:nowrap;padding:3px 9px;font-size:12px;min-height:0;line-height:1.2">⏱ 10 x 10${ya10 ? ' ✓' : ''}</button>`, '10" trabajo / 10" descanso; 1\' entre grupos.')
         + cs.map(e => { const y = d.bloques.some(b => b.k === 'circuito' && b.items[0]?.id === e.id); return R(`<button class="btn sm" data-addcirc="${e.id}" ${y ? 'disabled' : ''} style="justify-self:start;white-space:nowrap;padding:3px 9px;font-size:12px;min-height:0;line-height:1.2">🌴 ${esc(e.n)}${y ? ' ✓' : ''}</button>`, e.id === 'circuito_selvatico' ? 'Estaciones por parejas, con tiempo de cada pareja.' : esc((e.d || '').split('.')[0])); }).join('')
+        + R(`<button class="btn sm" id="b-add1a10" ${d.bloques.some(b => b.g === 'esc10') ? 'disabled' : ''} style="justify-self:start;white-space:nowrap;padding:3px 9px;font-size:12px;min-height:0;line-height:1.2">🔟 1 a 10${d.bloques.some(b => b.g === 'esc10') ? ' ✓' : ''}</button>`, 'Bolsa + físico de 1 a 10, en 3 estaciones (tren sup., core, piernas). Con guantes.')
         + R(`<button class="btn sm" id="b-addiso" ${d.bloques.some(b => b.g === 'iso') ? 'disabled' : ''} style="justify-self:start;white-space:nowrap;padding:3px 9px;font-size:12px;min-height:0;line-height:1.2">🧱 Isométrico${d.bloques.some(b => b.g === 'iso') ? ' ✓' : ''}</button>`, '6 ejercicios sostenidos con materiales: 40" / 20", 2 vueltas.')
         + R(`<button class="btn sm" id="b-addpel" ${ya ? 'disabled' : ''} style="justify-self:start;white-space:nowrap;padding:3px 9px;font-size:12px;min-height:0;line-height:1.2">🏆 Competencia${ya ? ' ✓' : ''}</button>`, 'Situaciones de pelea. Se suma a la clase.'); })()}</div></div>`; }
   if (d.manual && !d.bloques.some(b => b.items.length)) h += `<div class="note" style="margin:0 0 8px">Tocá <b>Generar clase</b> o armala a mano con <b>+ Agregar ejercicio</b> en cada bloque.</div>`;
@@ -1166,7 +1178,7 @@ function vClase() {
     h += `<div class="blk dndb" data-bi="${bi}"><div class="blkh"><h3 style="display:flex;align-items:center;gap:6px">${d.bloques.length > 1 ? '<span class="hdl hdlb" title="Arrastrá para mover el bloque" aria-label="Mover bloque">⋮⋮</span>' : ''}<span class="bt">${titulo(bl)}</span><button class="renb" data-ren="${bi}" title="Cambiar nombre" aria-label="Cambiar nombre">✏️</button></h3><div style="display:flex;align-items:center;gap:8px"><small>${bl.min} min</small><button class="btn sm delb" data-delb="${bi}" title="Quitar bloque">✕ Quitar</button></div></div>${cfgEdit(bl, bi)}${bl.f === 'd10' ? `<div class="row" style="justify-content:center;align-items:center;gap:8px;margin:2px 0 6px"><span class="note" style="padding:0">${bl.cfg.vueltas === 1 ? `Un ejercicio distinto por round` : `${bl.items.length} ejercicios alternados`}</span><button class="btn sm" data-d10="${bi}">🎲 ${bl.cfg.vueltas === 1 ? 'Pasar a 2 alternados' : 'Uno distinto por round'}</button></div>` : ''}`;
     if (!bl.items.length && bl.k !== 'pausa' && !d.manual) h += `<div class="note">Sin ejercicios disponibles con los materiales activos.</div>`;
     bl.items.forEach((it, ii) => { const e = exById(it.id); if (!e) return; h += subGrp(bl, ii);
-      h += `<div class="dnd" data-bi="${bi}" data-ii="${ii}">${bl.items.length > 1 ? '<span class="hdl" title="Arrastrá para cambiar el orden" aria-label="Mover">⋮⋮</span>' : ''}` + exRow(e, `<div style="display:flex;flex-direction:column;gap:4px"><button class="btn sm" data-sw="${bi},${ii}" title="Cambiar">↻</button>${bl.k !== 'circuito' ? `<button class="btn sm" data-dup="${bi},${ii}" title="Repetir este ejercicio">🔁</button>` : ''}<button class="btn sm" data-rm="${bi},${ii}" title="Quitar de la clase">✕</button></div>`, `${bl.k === 'rounds' ? `<span class="dstep" title="Cantidad de rounds"><button data-rd="${bi},${ii},-1" aria-label="Menos rounds">−</button><span>${it.rounds || 1} round${(it.rounds || 1) > 1 ? 's' : ''}</span><button data-rd="${bi},${ii},1" aria-label="Más rounds">+</button></span>` : bl.k === 'circuito' ? `<span class="chip" style="background:#3a1517;color:#ffb3b5">${dosis(bl, it)}</span>` : ''}${bl.k !== 'circuito' ? `<span class="dstep${it.w != null ? ' mod' : ''}" title="Tiempo de trabajo de este ejercicio"><button data-iw="${bi},${ii},-1" aria-label="Menos tiempo">−</button><span>${bl.k === 'rounds' ? fmtC(wIt(bl, it)) : dosis(bl, it)}</span><button data-iw="${bi},${ii},1" aria-label="Más tiempo">+</button></span>` : ''}${it.rep ? '<span class="chip rep">repetido reciente</span>' : ''}${afectados(e).length ? `<span class="chip rep">⚠ ${esc(afectados(e).join(', '))}</span>` : ''}`, d.carga) + '</div>'; });
+      h += `<div class="dnd" data-bi="${bi}" data-ii="${ii}">${bl.items.length > 1 ? '<span class="hdl" title="Arrastrá para cambiar el orden" aria-label="Mover">⋮⋮</span>' : ''}` + exRow(e, `<div style="display:flex;flex-direction:column;gap:4px"><button class="btn sm" data-sw="${bi},${ii}" title="Cambiar">↻</button>${!['circuito', 'esc10'].includes(bl.k) ? `<button class="btn sm" data-dup="${bi},${ii}" title="Repetir este ejercicio">🔁</button>` : ''}<button class="btn sm" data-rm="${bi},${ii}" title="Quitar de la clase">✕</button></div>`, `${bl.k === 'rounds' ? `<span class="dstep" title="Cantidad de rounds"><button data-rd="${bi},${ii},-1" aria-label="Menos rounds">−</button><span>${it.rounds || 1} round${(it.rounds || 1) > 1 ? 's' : ''}</span><button data-rd="${bi},${ii},1" aria-label="Más rounds">+</button></span>` : ['circuito', 'esc10'].includes(bl.k) ? `<span class="chip" style="background:#3a1517;color:#ffb3b5">${dosis(bl, it)}</span>` : ''}${!['circuito', 'esc10'].includes(bl.k) ? `<span class="dstep${it.w != null ? ' mod' : ''}" title="Tiempo de trabajo de este ejercicio"><button data-iw="${bi},${ii},-1" aria-label="Menos tiempo">−</button><span>${bl.k === 'rounds' ? fmtC(wIt(bl, it)) : dosis(bl, it)}</span><button data-iw="${bi},${ii},1" aria-label="Más tiempo">+</button></span>` : ''}${it.rep ? '<span class="chip rep">repetido reciente</span>' : ''}${afectados(e).length ? `<span class="chip rep">⚠ ${esc(afectados(e).join(', '))}</span>` : ''}`, d.carga) + '</div>'; });
     if (bl.k === 'circuito' && bl.parejas?.length) { const T = d.tiempos || {}, best = Math.min(...Object.values(T).flat().filter(x => x != null)), tt = a => (T[a] || []).filter(x => x != null);
       h += `<div class="parl">${bl.parejas.map((p, k) => `<div class="parr"><b class="parn">Pareja ${k + 1}</b><span>${p.map(a => `${esc(a)}${tt(a).length ? ` <small class="${tt(a).includes(best) ? 'best' : ''}">${tt(a).includes(best) ? '🥇 ' : ''}${tt(a).map(mmssC).join(' / ')}</small>` : ''}`).join(' <span class="mut">–</span> ')}</span></div>`).join('')}</div>`; }
     if (bl.k !== 'pausa' && bl.k !== 'circuito') h += `<button class="btn sm" data-add="${bi}" style="margin-top:6px">+ Agregar ejercicio</button>`;
@@ -1645,6 +1657,7 @@ $('#main').addEventListener('click', e => {
     B.splice(pos, 0, { b: 'pel', t: '🏆 Competencia', k: 'rounds', f: null, cfg: { ...rc }, items: [] }); recalcular(); agregarEj(pos); return; }
   if (b.id === 'b-addgrp' && S.draft) { ponerPreset(bloquesGrupos, '3 x 4', 'media'); return; }
   if (b.id === 'b-addiso' && S.draft) { ponerPreset(bloquesIso, 'Isométrico', 'media'); return; }
+  if (b.id === 'b-add1a10' && S.draft) { ponerPreset(bloques1a10, '1 a 10', 'dura'); return; }
   if (b.id === 'b-add10' && S.draft) { ponerPreset(bloques10x10, '10 x 10', 'dura'); return; }
   if (b.dataset.d10 && S.draft) { const bl = S.draft.bloques[+b.dataset.d10], uno = bl.cfg.vueltas !== 1; bl.items = d10Items(bl.g, uno ? 10 : 2); bl.cfg = { ...bl.cfg, vueltas: uno ? 1 : 5 }; recalcular(); return; }
   if (b.dataset.addcirc && S.draft) { const e = exById(b.dataset.addcirc); ponerPreset(() => [{ b: 'fis', t: '🌴 ' + e.n, k: 'circuito', f: null, cfg: { w: 360, r: 60, rondas: 1 }, items: [{ id: e.id }] }], e.n, 'dura'); return; }
@@ -1709,6 +1722,8 @@ function timeline(d) {
     const nxB = d.bloques[bix + 1]; const paB = paDe(bl); if (bix > 0 && paB > 0) T.push({ f: 'rest', s: paB, n: 'Pausa · prepararse para ' + titulo(bl), blk: titulo(bl), keep: 1 });
     const B = titulo(bl), c = bl.cfg, k = bl.k || (bl.b === 'tec' ? 'rounds' : (bl.b === 'cal' || bl.b === 'calma') ? 'cont' : 'circ');
     if (k === 'pausa') { T.push({ f: 'rest', s: c.each, n: B, blk: B, keep: 1 }); return; }
+    if (k === 'esc10') { const G = []; bl.items.forEach(it => { const g = it.gr || ''; let x = G.find(z => z.g === g); if (!x) G.push(x = { g, it: [] }); x.it.push(it); });
+      G.forEach((x, gi) => { const es = x.it.map(i => exById(i.id)).filter(Boolean); if (!es.length) return; T.push({ f: 'work', s: c.cap, crono: 1, n: es.map(e => e.n).join(' + '), a: es[es.length - 1].a, m: [], blk: B, sub: `${x.g} · de 1 a 10`, say: `${x.g}. ${es.map(e => e.n).join(' más ')}. De uno a diez.` }); if (gi < G.length - 1 && c.r) T.push({ f: 'rest', s: c.r, n: 'Cambio de estación', blk: B }); }); return; }
     if (k === 'circuito' && bl.parejas?.length) { const e = exById(bl.items[0]?.id); if (!e) return; const R = c.rondas || 1, mx = Math.max(...bl.parejas.map(p => p.length));
       T.push({ f: 'work', s: R * mx * c.w, n: e.n, a: null, m: [], pares: bl.parejas, rondas: R, blk: B, sub: '' }); return; }
     if (k === 'circuito') { const e = exById(bl.items[0]?.id); if (!e) return; const R = c.rondas || 1; for (let v = 1; v <= R; v++) for (let q = 1; q <= 2; q++) { T.push({ f: 'work', s: c.w, n: e.n, a: e.est?.[0]?.a || e.a, m: [], est: e.est || [], blk: B, sub: `${R > 1 ? `Ronda ${v} de ${R} · ` : ''}Integrante ${q}` }); if (v < R || q < 2) T.push({ f: 'rest', s: c.r, n: 'Cambio de pareja', blk: B, keep: 1 }); } return; }
@@ -1789,8 +1804,8 @@ function iniciarSeg() {
   $('#lv-name').textContent = s.f === 'work' ? (s.a ? s.n : '') : (s.next?.a ? 'Sigue: ' + s.next.n : s.f === 'rest' ? s.n : '');
   $('#lv-svg').style.display = live.anim ? '' : 'none';
   $('#lv-next').textContent = s.f === 'work' && s.next?.a ? 'Después: ' + s.next.n : '';
-  live.est = s.f === 'work' && s.est?.length ? 0 : -1; $('#lv-est').style.display = live.est >= 0 ? '' : 'none';
-  { const pw = s.f === 'work' ? s : live.segs.slice(0, live.i).reverse().find(x => x.f === 'work'); $('#lv-rep').style.display = pw && !pw.pares && !pw.est?.length && s.f !== 'prep' ? '' : 'none'; }
+  live.est = s.f === 'work' && s.est?.length ? 0 : -1; $('#lv-est').style.display = live.est >= 0 || (s.f === 'work' && s.crono) ? '' : 'none'; if (s.f === 'work' && s.crono) $('#lv-est').textContent = '✓ Terminaron la estación';
+  { const pw = s.f === 'work' ? s : live.segs.slice(0, live.i).reverse().find(x => x.f === 'work'); $('#lv-rep').style.display = pw && !pw.pares && !pw.crono && !pw.est?.length && s.f !== 'prep' ? '' : 'none'; }
   live.pm = s.f === 'work' && !!s.pares; $('#lv-par').style.display = live.pm ? '' : 'none'; setFase(s.f);
   if (live.pm) { live.pst = s.pares.map(p => ({ q: [...Array(s.rondas)].flatMap((_, r) => p.map(a => ({ a, r }))), i: 0, t0: 0 })); pintarPar(true); }
   if (s.f === 'work') { const prev = live.segs[live.i - 1]; const cambio = !prev || prev.blk !== s.blk; bell(1);
@@ -1824,7 +1839,7 @@ function pintarEst() { const s = live.segs[live.i], E = s.est, j = live.est, x =
 function sigEst() { const s = live.segs[live.i]; if (!s?.est || live.est < 0) return; bell(1);
   if (live.est < s.est.length - 1) { live.est++; pintarEst(); const x = s.est[live.est]; hablar(`${x.n}.`); }
   else if (live.i < live.segs.length - 1) { live.i++; iniciarSeg(); if (live.run) startTick(); } else finLive(); }
-function pintarT() { const s = live.segs[live.i]; if (!s) return; $('#lv-time').textContent = s.f === 'work' && s.pares ? mmss(s.s - live.left) : mmss(live.left); if (live.pm) pintarPar(); $('#lv-bar div').style.width = (100 * (1 - live.left / s.s)) + '%'; $('#lv-tot').textContent = 'Total ' + mmss(restante()); }
+function pintarT() { const s = live.segs[live.i]; if (!s) return; $('#lv-time').textContent = s.f === 'work' && (s.pares || s.crono) ? mmss(s.s - live.left) : mmss(live.left); if (live.pm) pintarPar(); $('#lv-bar div').style.width = (100 * (1 - live.left / s.s)) + '%'; $('#lv-tot').textContent = 'Total ' + mmss(restante()); }
 function startTick() { clearInterval(live.tick); live.last = performance.now(); live.tick = setInterval(() => {
   const now = performance.now(), dt = (now - live.last) / 1000; live.last = now; if (!live.run) return;
   const prevL = Math.ceil(live.left); live.left -= dt; const l = Math.ceil(live.left), s = live.segs[live.i];
@@ -1882,7 +1897,7 @@ function vTimer() {
 // toques rápidos en el modo clase (responde al apoyar el dedo, sin esperar el click)
 function tapLive(sel, fn) { const el = $(sel); let t = 0; el.addEventListener('pointerdown', e => { e.preventDefault(); const n = Date.now(); if (n - t < 250) return; t = n; el.classList.add('tap'); setTimeout(() => el.classList.remove('tap'), 150); try { desbloquear(); } catch (x) {} fn(); }); el.addEventListener('click', e => e.preventDefault()); }
 $('#lv-play').onclick = null; tapLive('#lv-play', () => { if (live.i >= live.segs.length) return; live.run = !live.run; if (live.run) startTick(); updPlay(); });
-tapLive('#lv-est', sigEst); tapLive('#lv-rep', () => { const s = live.segs[live.i]; if (!s) return;
+tapLive('#lv-est', () => { const s = live.segs[live.i]; if (s?.crono) { bell(1); if (live.i < live.segs.length - 1) { live.i++; iniciarSeg(); if (live.run) startTick(); } else finLive(); return; } sigEst(); }); tapLive('#lv-rep', () => { const s = live.segs[live.i]; if (!s) return;
   if (s.f === 'work') { live.left = s.s; live.say10 = false; live.warned = false; bell(1); hablar('Repetimos: ' + (s.a ? s.n : s.sub || '')); pintarT(); return; }
   let j = live.i - 1; while (j >= 0 && live.segs[j].f !== 'work') j--; if (j < 0) return; const w = { ...live.segs[j] }, r = { f: 'rest', s: Math.min(s.s, 30), n: 'Descanso', blk: w.blk };
   live.segs.splice(live.i + 1, 0, w, r); live.segs.forEach((x, k) => { x.next = live.segs.slice(k + 1).find(y => y.f === 'work'); });
