@@ -120,6 +120,7 @@ button.delb{font-size:11px;padding:3px 8px;color:#ff6b6b;border-color:#e5383b66}
 .stp span{min-width:26px;text-align:center;font:600 12px system-ui;color:var(--fg);padding:0 2px}
 .rsel{padding:2px 6px;font-size:12px;border-radius:20px;background:#3a1517;color:#ffb3b5;border:0}
 .alumno nav,.alumno #b-grupo{display:none!important}
+.pp.desc{background:#1d3557aa;border-color:#4cc9f0}
 </style>
 </head>
 <body>
@@ -1768,7 +1769,7 @@ function timeline(d) {
     const B = titulo(bl), c = bl.cfg, k = bl.k || (bl.b === 'tec' ? 'rounds' : (bl.b === 'cal' || bl.b === 'calma') ? 'cont' : 'circ');
     if (k === 'pausa') { T.push({ f: 'rest', s: c.each, n: B, blk: B, keep: 1 }); return; }
     if (k === 'esc10' && bl.parejas?.length) { const R = c.vueltas || 1, G = []; bl.items.forEach(it => { const e = exById(it.id); if (!e) return; const g = it.gr || ''; let x = G.find(z => z.g === g); if (!x) G.push(x = { g, n: [] }); x.n.push(e.n.replace(/^Bolsa: /, 'Bolsa ')); });
-      T.push({ f: 'work', s: R * 3 * 300, n: B, a: null, m: [], pares: bl.parejas, rondas: R, blk: B, sub: '', esc: '🔟 De 1 a 10 · ' + G.map(x => `<b>${esc(x.g)}:</b> ${esc(x.n.join(' + '))}`).join(' · ') + (R > 1 ? ` · ${R} vueltas (máx. ${fmt(c.rv ?? 60)} de descanso entre vueltas)` : '') }); return; }
+      T.push({ f: 'work', s: R * 3 * 300 + (R - 1) * (c.rv ?? 60), rv: c.rv ?? 60, n: B, a: null, m: [], pares: bl.parejas, rondas: R, blk: B, sub: '', esc: '🔟 De 1 a 10 · ' + G.map(x => `<b>${esc(x.g)}:</b> ${esc(x.n.join(' + '))}`).join(' · ') + (R > 1 ? ` · ${R} vueltas (máx. ${fmt(c.rv ?? 60)} de descanso entre vueltas)` : '') }); return; }
     if (k === 'esc10') { const G = []; bl.items.forEach(it => { const g = it.gr || ''; let x = G.find(z => z.g === g); if (!x) G.push(x = { g, it: [] }); x.it.push(it); });
       G.forEach((x, gi) => { const es = x.it.map(i => exById(i.id)).filter(Boolean); if (!es.length) return; T.push({ f: 'work', s: c.cap, crono: 1, n: es.map(e => e.n).join(' + '), a: es[es.length - 1].a, m: [], blk: B, sub: `${x.g} · de 1 a 10`, say: `${x.g}. ${es.map(e => e.n).join(' más ')}. De uno a diez.` }); if (gi < G.length - 1 && c.r) T.push({ f: 'rest', s: c.r, n: 'Cambio de estación', blk: B }); }); return; }
     if (k === 'circuito' && bl.parejas?.length) { const e = exById(bl.items[0]?.id); if (!e) return; const R = c.rondas || 1, mx = Math.max(...bl.parejas.map(p => p.length));
@@ -1835,10 +1836,23 @@ function hablar(t, forzar) {
   else if (!ttsOff) nativo();
 }
 const mmss = s => { s = Math.max(0, Math.ceil(s)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+// pantalla siempre encendida durante el timer (se vuelve a pedir si el sistema la suelta)
+function pedirWL() { try { if (!live.on || document.visibilityState !== 'visible') return; if (live.wl && !live.wl.released) return; navigator.wakeLock?.request('screen').then(w => live.wl = w).catch(() => {}); } catch (e) {} }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { pedirWL(); if (live.on && live.run) { live.last = live.last || performance.now(); } } else guardarLive(); });
+// copia del timer en curso para poder retomarlo si la app se cierra o se recarga
+function guardarLive() { try { if (!live.on || live.i >= live.segs.length) return; localStorage.setItem('kb_live', JSON.stringify({ at: Date.now(), run: live.run, i: live.i, left: live.left, segs: live.segs, pst: live.pst || null, titulo: live.titulo, cfg: live.cfg, esClase: live.esClase, draft: S.draft, edPlan: !!S.edPlan, dif: S.difMode ? 1 : 0 })); } catch (e) {} }
+function borrarLive() { try { localStorage.removeItem('kb_live'); } catch (e) {} }
+function retomarLive() { let L; try { L = JSON.parse(localStorage.getItem('kb_live') || 'null'); } catch (e) {} if (!L || Date.now() - L.at > 3 * 3600e3 || !L.segs?.length || !!L.dif !== !!S.difMode) { borrarLive(); return; }
+  const m = modal(`<h3 style="margin-top:0">⏱ Había un timer en curso</h3><div class="note" style="padding-top:0">${esc(L.titulo || 'Clase')} · ${esc(L.segs[L.i]?.n || '')}</div><div class="row" style="justify-content:flex-end"><button class="btn" id="rl-no">Descartar</button><button class="btn pri" id="rl-ok">▶ Retomar</button></div>`);
+  m.querySelector('#rl-no').onclick = () => { borrarLive(); m.remove(); };
+  m.querySelector('#rl-ok').onclick = () => { m.remove(); if (L.draft) { if (L.edPlan) S.edPlan = { prev: S.draft }; S.draft = L.draft; }
+    const pas = L.run ? (Date.now() - L.at) / 1000 : 0; live.esClase = L.esClase; live.segs = L.segs; live.titulo = L.titulo; live.cfg = L.cfg; live.on = true; live.i = L.i; $('#live').classList.add('on'); AC();
+    const pst = L.pst; iniciarSeg(); live.left = L.left; if (pst && live.pm) live.pst = pst; let r = pas; while (r > 0 && live.i < live.segs.length) { if (r < live.left) { live.left -= r; r = 0; } else { r -= live.left; live.i++; if (live.i >= live.segs.length) break; iniciarSeg(); } }
+    if (live.i >= live.segs.length) { finLive(); return; } if (live.pm) pintarPar(true); pintarT(); live.run = L.run; if (live.run) startTick(); updPlay(); pedirWL(); }; }
 function abrirLive(segs, titulo, cfgTxt, esClase) {
   live.esClase = !!esClase; live.segs = segs; live.i = 0; live.on = true; live.titulo = titulo || 'Clase'; live.cfg = cfgTxt || '';
   $('#live').classList.add('on');
-  try { navigator.wakeLock?.request('screen').then(w => live.wl = w).catch(() => {}); } catch (e) {}
+  pedirWL();
   AC(); iniciarSeg(); live.run = true; startTick(); updPlay();
 }
 function restante() { return live.left + live.segs.slice(live.i + 1).reduce((a, s) => a + s.s, 0); }
@@ -1872,13 +1886,17 @@ function pintarPar(full) { const s = live.segs[live.i]; if (!s?.pares) return; c
     box.classList.toggle('fin', fin);
     const solo = s.pares[k].length === 1, Rl = s.esc ? 'Vuelta' : 'Ronda'; box.querySelector('.pp-r').textContent = (solo ? '' : `Pareja ${k + 1}`) + (fin ? (solo ? '¡Terminó!' : ' · ¡Terminaron!') : s.rondas > 1 ? `${solo ? '' : ' · '}${Rl} ${cur.r + 1} de ${s.rondas}` : '');
     box.querySelector('.pp-n').textContent = fin ? s.pares[k].join(' – ') : cur.a;
-    box.querySelector('.pp-t').textContent = fin ? '' : mmss(el - st.t0);
+    const enDesc = !fin && st.t0 > el; if (st.rest && !enDesc && !fin) { st.rest = 0; bell(1); hablar(`${cur.a}, arranca la vuelta ${cur.r + 1}.`); }
+    box.querySelector('.pp-t').textContent = fin ? '' : enDesc ? 'Descanso ' + mmss(st.t0 - el) : mmss(el - st.t0); box.classList.toggle('desc', enDesc); box.querySelector('.pp-ok').textContent = enDesc ? '▶ Arrancar ya' : '✓ Terminó';
     box.querySelector('.pp-a').textContent = fin || solo ? '' : 'asiste: ' + s.pares[k].filter(x => x !== cur.a).join(', ');
     box.querySelector('.pp-ok').style.display = fin ? 'none' : ''; box.querySelector('.pp-un').style.visibility = st.i ? '' : 'hidden';
     box.querySelector('.pp-h').innerHTML = st.q.slice(0, st.i).map(x => `${esc(x.a)} ${mmssC((T[x.a] || [])[x.r] || 0)}`).join(' · '); }); }
 function marcarPar(k, des) { const s = live.segs[live.i]; if (!s?.pares || !S.draft) return; const st = live.pst[k], el = s.s - live.left, T = S.draft.tiempos ||= {};
-  if (des) { if (!st.i) return; st.i--; const x = st.q[st.i]; st.t0 = el - ((T[x.a] || [])[x.r] || 0); if (T[x.a]) T[x.a][x.r] = null; }
-  else { const x = st.q[st.i]; if (!x) return; (T[x.a] ||= [])[x.r] = el - st.t0; st.i++; st.t0 = el; bell(1); const nx = st.q[st.i]; hablar(nx ? `${x.a}, ${mmssC(T[x.a][x.r]).replace("'", ' minutos ').replace('"', ' segundos')}. Sigue ${nx.a}.` : `${x.a} terminó. Pareja completa.`); }
+  if (des) { if (!st.i) return; st.rest = 0; st.i--; const x = st.q[st.i]; st.t0 = el - ((T[x.a] || [])[x.r] || 0); if (T[x.a]) T[x.a][x.r] = null; }
+  else { if (st.t0 > el) { st.t0 = el; st.rest = 0; bell(1); hablar(`${st.q[st.i]?.a || ''}, arrancá.`); pintarPar(); return; } // en descanso: arrancar ya
+    const x = st.q[st.i]; if (!x) return; (T[x.a] ||= [])[x.r] = el - st.t0; st.i++; st.t0 = el; bell(1); const nx = st.q[st.i], solo = s.pares[k].length === 1;
+    if (nx && solo && s.rv) { st.t0 = el + s.rv; st.rest = 1; } // descanso entre vueltas (1 a 10): el cronómetro de la vuelta siguiente arranca después
+    hablar(nx ? `${x.a}, ${mmssC(T[x.a][x.r]).replace("'", ' minutos ').replace('"', ' segundos')}. ${solo ? (s.rv ? `Descanso ${s.rv >= 60 ? Math.round(s.rv / 60) + ' minuto' + (s.rv >= 120 ? 's' : '') : s.rv + ' segundos'}.` : 'Sigue.') : `Sigue ${nx.a}.`}` : (solo ? `${x.a} terminó.` : `${x.a} terminó. Pareja completa.`)); }
   saveDraftLocal(); if (S.draft._saved && S.draft._id && S.db) { const id = S.draft._id, tt = JSON.parse(JSON.stringify(T)); serial(() => clasesRef().doc(id).update({ tiempos: tt })); }
   pintarPar(); if (live.pst.every(p => p.i >= p.q.length)) setTimeout(() => { if (live.segs[live.i] === s && live.pst.every(p => p.i >= p.q.length)) { live.i++; iniciarSeg(); if (live.run) startTick(); } }, 1500); }
 function pintarEst() { const s = live.segs[live.i], E = s.est, j = live.est, x = E[j];
@@ -1890,7 +1908,7 @@ function sigEst() { const s = live.segs[live.i]; if (!s?.est || live.est < 0) re
   else if (live.i < live.segs.length - 1) { live.i++; iniciarSeg(); if (live.run) startTick(); } else finLive(); }
 function pintarT() { const s = live.segs[live.i]; if (!s) return; $('#lv-time').textContent = s.f === 'work' && (s.pares || s.crono) ? mmss(s.s - live.left) : mmss(live.left); if (live.pm) pintarPar(); $('#lv-bar div').style.width = (100 * (1 - live.left / s.s)) + '%'; $('#lv-tot').textContent = 'Total ' + mmss(restante()); }
 function startTick() { clearInterval(live.tick); live.last = performance.now(); live.tick = setInterval(() => {
-  const now = performance.now(), dt = (now - live.last) / 1000; live.last = now; if (!live.run) return;
+  const now = performance.now(), dt = (now - live.last) / 1000; live.last = now; if (now - (live.sv || 0) > 2000) { live.sv = now; guardarLive(); } if (!live.run) return;
   const prevL = Math.ceil(live.left); live.left -= dt; const l = Math.ceil(live.left), s = live.segs[live.i];
   // bolsa con ejercicios intercalados: 30" de bolsa y 15" de ejercicio, anunciado con la voz
   let enEj = false; if (s.f === 'work' && s.inter) { const el = s.s - live.left, k = Math.floor(el / 45); enEj = el % 45 >= 30; const key = live.i + ':' + k + ':' + enEj;
@@ -1902,8 +1920,8 @@ function startTick() { clearInterval(live.tick); live.last = performance.now(); 
   if (live.left <= 0) { live.i++; iniciarSeg(); } else pintarT();
 }, 100); }
 function updPlay() { $('#lv-play').textContent = live.run ? '⏸' : '▶'; }
-function finLive() { live.run = false; setFase('end'); bell(3); $('#lv-ph').textContent = 'FIN'; $('#lv-round').textContent = ''; $('#lv-name').textContent = '¡Terminado! Buen trabajo.'; $('#lv-next').textContent = ''; $('#lv-time').textContent = '0:00'; $('#lv-tot').textContent = ''; live.anim = null; $('#lv-svg').style.display = 'none'; hablar('Terminado. Buen trabajo.'); clearInterval(live.tick); updPlay(); if (live.esClase && S.draft && !S.draft._saved) guardarClase();  if (S.difMode) marcarDifHecha(); }
-function cerrarLive() { live.on = false; live.run = false; clearInterval(live.tick); $('#live').className = ''; try { tts?.stop().catch(() => {}); speechSynthesis?.cancel(); } catch (e) {} try { live.wl?.release(); } catch (e) {} if (S.edPlan) { cerrarPlan(); return; } if (S.draft?.tiempos) render(); }
+function finLive() { borrarLive(); live.run = false; setFase('end'); bell(3); $('#lv-ph').textContent = 'FIN'; $('#lv-round').textContent = ''; $('#lv-name').textContent = '¡Terminado! Buen trabajo.'; $('#lv-next').textContent = ''; $('#lv-time').textContent = '0:00'; $('#lv-tot').textContent = ''; live.anim = null; $('#lv-svg').style.display = 'none'; hablar('Terminado. Buen trabajo.'); clearInterval(live.tick); updPlay(); if (live.esClase && S.draft && !S.draft._saved) guardarClase();  if (S.difMode) marcarDifHecha(); }
+function cerrarLive() { borrarLive(); live.on = false; live.run = false; clearInterval(live.tick); $('#live').className = ''; try { tts?.stop().catch(() => {}); speechSynthesis?.cancel(); } catch (e) {} try { live.wl?.release(); } catch (e) {} if (S.edPlan) { cerrarPlan(); return; } if (S.draft?.tiempos) render(); }
 
 /* ================= TIMER DE ROUNDS ================= */
 const PRESETS = [
@@ -1963,6 +1981,7 @@ $('#lv-combo').onclick = () => { live.comboOn = !live.comboOn; $('#lv-combo').st
 render();
 (async () => {
   try { tts = await claude.use('tts'); } catch (e) {}
+  setTimeout(retomarLive, 2500);
   if (DIF_ID) { modoAlumno(); return; }
   let db = null; try { db = await claude.use('db'); } catch (e) {}
   const to = setTimeout(() => { if (!S.loaded.banco) toast('No se puede conectar con la base todavía…'); }, 10000);
