@@ -1795,7 +1795,7 @@ let VOZ = (() => { try { return { v: 'buttery', rate: 1.05, ...JSON.parse(localS
 const guardarVoz = () => { try { localStorage.setItem('kb_voz', JSON.stringify(VOZ)); } catch (e) {} };
 const vocesNav = () => { try { return speechSynthesis.getVoices().filter(v => /^es/i.test(v.lang)); } catch (e) { return []; } };
 try { speechSynthesis.onvoiceschanged = () => { if (S.tab === 'timer' && !document.querySelector('.modal')) render(); }; } catch (e) {}
-function hablar(t, forzar) {
+function hablar(t, forzar) { if (hablar._mute) return;
   t = String(t || '').replace(/[\p{Extended_Pictographic}\u{FE0F}\u{200D}]/gu, '').replace(/\s+/g, ' ').trim();
   if (!live.voice && !forzar) return;
   if (!forzar && !hablar._d) { hablar._d = 1; setTimeout(() => { hablar._d = 0; hablar(t, 'd'); }, 0); return; } if (forzar === 'd') forzar = false;
@@ -1809,7 +1809,7 @@ const mmss = s => { s = Math.max(0, Math.ceil(s)); return `${Math.floor(s / 60)}
 function pedirWL() { try { if (!live.on || document.visibilityState !== 'visible') return; if (live.wl && !live.wl.released) return;
   if (!navigator.wakeLock) { if (!pedirWL._av) { pedirWL._av = 1; toast('⚠ Este navegador no puede mantener la pantalla encendida: subí el tiempo de apagado de pantalla del celular.'); } return; }
   navigator.wakeLock.request('screen').then(w => { live.wl = w; w.addEventListener?.('release', () => setTimeout(pedirWL, 500)); }).catch(() => { if (!pedirWL._av) { pedirWL._av = 1; toast('⚠ No se pudo mantener la pantalla encendida: subí el tiempo de apagado de pantalla del celular.'); } }); } catch (e) {} }
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { pedirWL(); if (live.on && live.run) { live.last = live.last || performance.now(); } } else guardarLive(); });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { pedirWL(); if (live.on && live.run) { live.last = live.last || Date.now(); } } else guardarLive(); });
 // copia del timer en curso para poder retomarlo si la app se cierra o se recarga
 function guardarLive() { try { if (!live.on || live.i >= live.segs.length) return; localStorage.setItem('kb_live', JSON.stringify({ at: Date.now(), run: live.run, i: live.i, left: live.left, segs: live.segs, pst: live.pst || null, titulo: live.titulo, cfg: live.cfg, esClase: live.esClase, draft: S.draft, edPlan: !!S.edPlan, dif: S.difMode ? 1 : 0 })); } catch (e) {} }
 function borrarLive() { try { localStorage.removeItem('kb_live'); } catch (e) {} }
@@ -1878,8 +1878,8 @@ function sigEst() { const s = live.segs[live.i]; if (!s?.est || live.est < 0) re
   if (live.est < s.est.length - 1) { live.est++; pintarEst(); const x = s.est[live.est]; hablar(`${x.n}.`); }
   else if (live.i < live.segs.length - 1) { live.i++; iniciarSeg(); if (live.run) startTick(); } else finLive(); }
 function pintarT() { const s = live.segs[live.i]; if (!s) return; $('#lv-time').textContent = s.f === 'work' && (s.pares || s.crono) ? mmss(s.s - live.left) : mmss(live.left); if (live.pm) pintarPar(); $('#lv-bar div').style.width = (100 * (1 - live.left / s.s)) + '%'; $('#lv-tot').textContent = 'Total ' + mmss(restante()); }
-function startTick() { clearInterval(live.tick); live.last = performance.now(); live.tick = setInterval(() => {
-  const now = performance.now(), dt = (now - live.last) / 1000; live.last = now; if (now - (live.sv || 0) > 2000) { live.sv = now; guardarLive(); pedirWL(); } if (!live.run) return;
+function startTick() { clearInterval(live.tick); live.last = Date.now(); live.tick = setInterval(() => {
+  const now = Date.now(), dt = Math.max(0, (now - live.last) / 1000); // reloj real: si la pantalla se apaga o la app se frena, al volver descuenta todo el tiempo que pasó live.last = now; if (now - (live.sv || 0) > 2000) { live.sv = now; guardarLive(); pedirWL(); } if (!live.run) return;
   const prevL = Math.ceil(live.left); live.left -= dt; const l = Math.ceil(live.left), s = live.segs[live.i];
   // bolsa con ejercicios intercalados: 30" de bolsa y 15" de ejercicio, anunciado con la voz
   let enEj = false; if (s.f === 'work' && s.inter) { const el = s.s - live.left, k = Math.floor(el / 45); enEj = el % 45 >= 30; const key = live.i + ':' + k + ':' + enEj;
@@ -1888,7 +1888,10 @@ function startTick() { clearInterval(live.tick); live.last = performance.now(); 
   if (s.f === 'work' && s.combo && !enEj && live.comboOn && l > 4 && s.s - live.left > 4 && now - (live.lastCombo || 0) > live.comboEvery * 1000) { live.lastCombo = now; const c = combo(s.combo); $('#lv-next').textContent = '🗣 ' + c; cantar(c); }
   if (s.f === 'work' && s.s >= 30 && l <= 10 && !live.warned) { live.warned = true; setFase('warn'); clack(); if (s.s >= 60) hablar('Diez segundos'); }
   if (s.f !== 'work' && l !== prevL && l <= 3 && l > 0) beep(l === 1 ? 1100 : 760, .12);
-  if (live.left <= 0) { live.i++; iniciarSeg(); } else pintarT();
+  if (live.left <= 0) { // pasar de bloque; si pasó mucho tiempo (pantalla apagada), avanzar todos los que correspondan
+    let over = -live.left; hablar._mute = over > 2; live.i++; iniciarSeg();
+    while (over > 0 && live.i < live.segs.length && live.run) { if (over < live.left) { live.left -= over; over = 0; } else { over -= live.left; live.i++; if (over <= 2) hablar._mute = false; iniciarSeg(); } }
+    hablar._mute = false; if (live.i < live.segs.length) { if (live.pm) pintarPar(true); pintarT(); } } else pintarT();
 }, 100); }
 function updPlay() { $('#lv-play').textContent = live.run ? '⏸' : '▶'; }
 function finLive() { borrarLive(); live.run = false; setFase('end'); bell(3); $('#lv-ph').textContent = 'FIN'; $('#lv-round').textContent = ''; $('#lv-name').textContent = '¡Terminado! Buen trabajo.'; $('#lv-next').textContent = ''; $('#lv-time').textContent = '0:00'; $('#lv-tot').textContent = ''; live.anim = null; $('#lv-svg').style.display = 'none'; hablar('Terminado. Buen trabajo.'); clearInterval(live.tick); updPlay(); if (live.esClase && S.draft && !S.draft._saved) guardarClase();  if (S.difMode) marcarDifHecha(); }
