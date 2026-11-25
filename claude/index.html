@@ -1879,7 +1879,8 @@ function sigEst() { const s = live.segs[live.i]; if (!s?.est || live.est < 0) re
   else if (live.i < live.segs.length - 1) { live.i++; iniciarSeg(); if (live.run) startTick(); } else finLive(); }
 function pintarT() { const s = live.segs[live.i]; if (!s) return; $('#lv-time').textContent = s.f === 'work' && (s.pares || s.crono) ? mmss(s.s - live.left) : mmss(live.left); if (live.pm) pintarPar(); $('#lv-bar div').style.width = (100 * (1 - live.left / s.s)) + '%'; $('#lv-tot').textContent = 'Total ' + mmss(restante()); }
 function startTick() { clearInterval(live.tick); live.last = Date.now(); live.tick = setInterval(() => {
-  const now = Date.now(), dt = Math.max(0, (now - live.last) / 1000); // reloj real: si la pantalla se apaga o la app se frena, al volver descuenta todo el tiempo que pasó live.last = now; if (now - (live.sv || 0) > 2000) { live.sv = now; guardarLive(); pedirWL(); } if (!live.run) return;
+  // reloj real: si la pantalla se apaga o la app se frena, al volver descuenta todo el tiempo que pasó
+  const now = Date.now(), dt = Math.max(0, (now - live.last) / 1000); live.last = now; if (now - (live.sv || 0) > 2000) { live.sv = now; guardarLive(); pedirWL(); } if (!live.run) return;
   const prevL = Math.ceil(live.left); live.left -= dt; const l = Math.ceil(live.left), s = live.segs[live.i];
   // bolsa con ejercicios intercalados: 30" de bolsa y 15" de ejercicio, anunciado con la voz
   let enEj = false; if (s.f === 'work' && s.inter) { const el = s.s - live.left, k = Math.floor(el / 45); enEj = el % 45 >= 30; const key = live.i + ':' + k + ':' + enEj;
