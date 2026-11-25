@@ -1806,7 +1806,9 @@ function hablar(t, forzar) {
 }
 const mmss = s => { s = Math.max(0, Math.ceil(s)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
 // pantalla siempre encendida durante el timer (se vuelve a pedir si el sistema la suelta)
-function pedirWL() { try { if (!live.on || document.visibilityState !== 'visible') return; if (live.wl && !live.wl.released) return; navigator.wakeLock?.request('screen').then(w => live.wl = w).catch(() => {}); } catch (e) {} }
+function pedirWL() { try { if (!live.on || document.visibilityState !== 'visible') return; if (live.wl && !live.wl.released) return;
+  if (!navigator.wakeLock) { if (!pedirWL._av) { pedirWL._av = 1; toast('⚠ Este navegador no puede mantener la pantalla encendida: subí el tiempo de apagado de pantalla del celular.'); } return; }
+  navigator.wakeLock.request('screen').then(w => { live.wl = w; w.addEventListener?.('release', () => setTimeout(pedirWL, 500)); }).catch(() => { if (!pedirWL._av) { pedirWL._av = 1; toast('⚠ No se pudo mantener la pantalla encendida: subí el tiempo de apagado de pantalla del celular.'); } }); } catch (e) {} }
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { pedirWL(); if (live.on && live.run) { live.last = live.last || performance.now(); } } else guardarLive(); });
 // copia del timer en curso para poder retomarlo si la app se cierra o se recarga
 function guardarLive() { try { if (!live.on || live.i >= live.segs.length) return; localStorage.setItem('kb_live', JSON.stringify({ at: Date.now(), run: live.run, i: live.i, left: live.left, segs: live.segs, pst: live.pst || null, titulo: live.titulo, cfg: live.cfg, esClase: live.esClase, draft: S.draft, edPlan: !!S.edPlan, dif: S.difMode ? 1 : 0 })); } catch (e) {} }
@@ -1877,7 +1879,7 @@ function sigEst() { const s = live.segs[live.i]; if (!s?.est || live.est < 0) re
   else if (live.i < live.segs.length - 1) { live.i++; iniciarSeg(); if (live.run) startTick(); } else finLive(); }
 function pintarT() { const s = live.segs[live.i]; if (!s) return; $('#lv-time').textContent = s.f === 'work' && (s.pares || s.crono) ? mmss(s.s - live.left) : mmss(live.left); if (live.pm) pintarPar(); $('#lv-bar div').style.width = (100 * (1 - live.left / s.s)) + '%'; $('#lv-tot').textContent = 'Total ' + mmss(restante()); }
 function startTick() { clearInterval(live.tick); live.last = performance.now(); live.tick = setInterval(() => {
-  const now = performance.now(), dt = (now - live.last) / 1000; live.last = now; if (now - (live.sv || 0) > 2000) { live.sv = now; guardarLive(); } if (!live.run) return;
+  const now = performance.now(), dt = (now - live.last) / 1000; live.last = now; if (now - (live.sv || 0) > 2000) { live.sv = now; guardarLive(); pedirWL(); } if (!live.run) return;
   const prevL = Math.ceil(live.left); live.left -= dt; const l = Math.ceil(live.left), s = live.segs[live.i];
   // bolsa con ejercicios intercalados: 30" de bolsa y 15" de ejercicio, anunciado con la voz
   let enEj = false; if (s.f === 'work' && s.inter) { const el = s.s - live.left, k = Math.floor(el / 45); enEj = el % 45 >= 30; const key = live.i + ':' + k + ':' + enEj;
